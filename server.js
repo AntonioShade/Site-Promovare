@@ -184,7 +184,8 @@ export function initializeDatabase(filename) {
       name TEXT NOT NULL,
       image TEXT NOT NULL DEFAULT '',
       position INTEGER NOT NULL UNIQUE,
-      source_id TEXT
+      source_id TEXT,
+      joined_at TEXT NOT NULL DEFAULT ''
     );
     CREATE TABLE IF NOT EXISTS site_settings (
       key TEXT PRIMARY KEY,
@@ -212,6 +213,9 @@ export function initializeDatabase(filename) {
   const staffColumns = db.prepare("PRAGMA table_info(staff)").all();
   if (!staffColumns.some((column) => column.name === "source_id")) {
     db.exec("ALTER TABLE staff ADD COLUMN source_id TEXT");
+  }
+  if (!staffColumns.some((column) => column.name === "joined_at")) {
+    db.exec("ALTER TABLE staff ADD COLUMN joined_at TEXT NOT NULL DEFAULT ''");
   }
   db.exec("CREATE UNIQUE INDEX IF NOT EXISTS staff_source_id_unique ON staff(source_id) WHERE source_id IS NOT NULL");
   db.prepare("INSERT OR IGNORE INTO site_settings (key, value) VALUES ('hero_image', ?)").run("/assets/hero.png");
@@ -342,6 +346,7 @@ function publicStaff(row) {
     style: row.style,
     name: row.name,
     image: row.image,
+    joinedAt: row.joined_at,
   };
 }
 
@@ -392,7 +397,8 @@ export function parseStaffSheetCsv(csv) {
     if (!sourceId) throw new Error(`Lipsește identificatorul din coloana B pentru persoana „${name}”.`);
     if (sourceIds.has(sourceId)) throw new Error(`Identificatorul „${sourceId}” apare de mai multe ori în documentul personalului.`);
     sourceIds.add(sourceId);
-    records.push({ sourceId, name, rank, ...staffRanks[rank] });
+    const joinedAt = values[9]?.trim() ?? "";
+    records.push({ sourceId, name, rank, joinedAt, ...staffRanks[rank] });
   }
 
   if (records.length === 0) throw new Error("Nu s-au găsit persoane cu nume și cu unul dintre cele patru grade urmărite.");
@@ -421,20 +427,20 @@ export function synchronizeStaff(db, records) {
     db.prepare("UPDATE staff SET position = position + 1000000").run();
     const updateStaff = db.prepare(`
       UPDATE staff
-      SET source_id = ?, role = ?, responsibility = ?, style = ?, name = ?, position = ?
+      SET source_id = ?, role = ?, responsibility = ?, style = ?, name = ?, joined_at = ?, position = ?
       WHERE id = ?
     `);
     const insertStaff = db.prepare(`
-      INSERT INTO staff (id, source_id, role, responsibility, style, name, image, position)
-      VALUES (?, ?, ?, ?, ?, ?, '', ?)
+      INSERT INTO staff (id, source_id, role, responsibility, style, name, image, position, joined_at)
+      VALUES (?, ?, ?, ?, ?, ?, '', ?, ?)
     `);
 
     for (const record of assignments) {
       const existing = existingIds.has(record.id);
       if (existing) {
-        updateStaff.run(record.sourceId, record.rank, record.responsibility, record.style, record.name, record.position, record.id);
+        updateStaff.run(record.sourceId, record.rank, record.responsibility, record.style, record.name, record.joinedAt, record.position, record.id);
       } else {
-        insertStaff.run(record.id, record.sourceId, record.rank, record.responsibility, record.style, record.name, record.position);
+        insertStaff.run(record.id, record.sourceId, record.rank, record.responsibility, record.style, record.name, record.position, record.joinedAt);
       }
     }
 

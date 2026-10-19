@@ -34,7 +34,7 @@ const pageRoutes = {
   "/cereri-de-audienta": {
     title: "Cereri de audiență",
     section: "service-detail",
-    details: ["Descrie pe scurt motivul întâlnirii.", "Include numele și datele tale de contact.", "Echipa de Relații Publice îți va răspunde pentru stabilirea detaliilor."],
+    details: ["Descrie motivul cererii de audiență.", "Include numele și datele tale de contact.", "Conducerea îți va răspunde pentru stabilirea detaliilor."],
     formUrl: "https://docs.google.com/forms/d/e/1FAIpQLScq3rOOmd0S1iUsnTKAgREkLymWRexNCPSytURbYfHmT_IPHQ/viewform",
   },
   "/informatii": {
@@ -369,10 +369,10 @@ function makeStaffCard(member) {
   const role = document.createElement("span");
   role.className = "org-role";
   role.textContent = member.role;
-  const responsibility = document.createElement("span");
-  responsibility.className = "org-responsibility";
-  responsibility.textContent = member.responsibility;
-  details.append(role, name, responsibility);
+  const seniority = document.createElement("span");
+  seniority.className = "org-seniority";
+  seniority.textContent = `Vechime: ${member.joinedAt || "—"}`;
+  details.append(role, name, seniority);
   card.append(portrait, details);
   return card;
 }

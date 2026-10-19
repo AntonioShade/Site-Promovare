@@ -26,17 +26,17 @@ before(async () => {
   process.env.ADMIN_PASSWORD = testAdminPassword;
   process.env.STAFF_SHEET_SYNC_INTERVAL_MS = "0";
   sheetCsv = [
-    '"","ID ","NR. INSIGNA ","NUME ","RANK "',
-    '"","9335","001","Darrin Rodriguez","DIRECTOR GENERAL"',
-    '"","10681","002","Antonio Shades","DIRECTOR ADJUNCT"',
-    '"","10682","003","Marius Mark","DIRECTOR ADJUNCT"',
-    '"","10683","004","Erwin Moretti","MEDIC INSPECTOR"',
-    '"","10684","005","Mihail Parvu","MEDIC INSPECTOR"',
-    '"","10685","006","Inspector Test 3","MEDIC INSPECTOR"',
-    '"","10686","007","Vlad Samson","MEDIC CHIRURG"',
-    '"","10687","008","Xender NDC","MEDIC CHIRURG"',
-    '"","10688","009","AlMajdi Tariq","MEDIC CHIRURG"',
-    '"","10690","011","Persoană din alt grad","MEDIC PRIMAR"',
+    '"","ID ","NR. INSIGNA ","NUME ","RANK ","DEPARTAMENT ","","LISTA DEPARTAMENT STATUS ","ULTIMUL UP ","DATA INTRARE "',
+    '"","9335","001","Darrin Rodriguez","DIRECTOR GENERAL","CONDUCERE","","Activ","10.08.2021","06.04.2021"',
+    '"","10681","002","Antonio Shades","DIRECTOR ADJUNCT","CONDUCERE","","Activ","30.07.2024","25.10.2023"',
+    '"","10682","003","Marius Mark","DIRECTOR ADJUNCT","CONDUCERE","","Activ","06.07.2026","10.07.2025"',
+    '"","10683","004","Erwin Moretti","MEDIC INSPECTOR","CONDUCERE","","Activ","19.08.2026","08.01.2026"',
+    '"","10684","005","Mihail Parvu","MEDIC INSPECTOR","CONDUCERE","","Activ","28.03.2026","25.06.2025"',
+    '"","10685","006","Inspector Test 3","MEDIC INSPECTOR","CONDUCERE","","Activ","28.03.2026","01.02.2025"',
+    '"","10686","007","Vlad Samson","MEDIC CHIRURG","CONDUCERE SECUNDA","","Activ","06.07.2026","24.07.2025"',
+    '"","10687","008","Xender NDC","MEDIC CHIRURG","CONDUCERE SECUNDA","","Activ","13.09.2026","12.07.2025"',
+    '"","10688","009","AlMajdi Tariq","MEDIC CHIRURG","CONDUCERE SECUNDA","","Activ","13.09.2026","01.05.2026"',
+    '"","10690","011","Persoană din alt grad","MEDIC PRIMAR","SUPERVIZOR","","Activ","30.09.2026","24.03.2026"',
   ].join("\r\n");
   sheetServer = createServer((_request, response) => {
     response.setHeader("Content-Type", "text/csv; charset=utf-8");
@@ -119,6 +119,8 @@ test("serves the site, synchronizes Google Sheets staff, and persists authentica
     new Map([["DIRECTOR GENERAL", 1], ["DIRECTOR ADJUNCT", 2], ["MEDIC INSPECTOR", 3], ["MEDIC CHIRURG", 3]]),
   );
   assert.equal(staff.find((member) => member.role === "DIRECTOR GENERAL").name, "Darrin Rodriguez");
+  assert.equal(staff.find((member) => member.name === "Darrin Rodriguez").joinedAt, "06.04.2021");
+  assert.equal(staff.find((member) => member.name === "Antonio Shades").joinedAt, "25.10.2023");
 
   const { response: initialDepartmentsResponse, body: initialDepartments } = await json("/api/departments");
   assert.equal(initialDepartmentsResponse.status, 200);
@@ -127,14 +129,17 @@ test("serves the site, synchronizes Google Sheets staff, and persists authentica
 
   sheetCsv = sheetCsv
     .replace("Darrin Rodriguez", "Darrin Actualizat")
+    .replace("06.04.2021", "07.04.2021")
     .replace(
-      '"","10688","009","AlMajdi Tariq","MEDIC CHIRURG"',
-      '"","10688","009","AlMajdi Tariq","MEDIC CHIRURG"\r\n"","10689","010","Chirurg Nou","MEDIC CHIRURG"',
+      '"","10688","009","AlMajdi Tariq","MEDIC CHIRURG","CONDUCERE SECUNDA","","Activ","13.09.2026","01.05.2026"',
+      '"","10688","009","AlMajdi Tariq","MEDIC CHIRURG","CONDUCERE SECUNDA","","Activ","13.09.2026","01.05.2026"\r\n"","10689","010","Chirurg Nou","MEDIC CHIRURG","CONDUCERE SECUNDA","","Activ","13.09.2026","02.02.2026"',
     );
   const { body: refreshedStaffData } = await json("/api/staff");
   assert.equal(refreshedStaffData.members.length, 10);
   assert.equal(refreshedStaffData.members.find((member) => member.role === "DIRECTOR GENERAL").name, "Darrin Actualizat");
+  assert.equal(refreshedStaffData.members.find((member) => member.name === "Darrin Actualizat").joinedAt, "07.04.2021");
   assert.equal(refreshedStaffData.members.find((member) => member.name === "Chirurg Nou").role, "MEDIC CHIRURG");
+  assert.equal(refreshedStaffData.members.find((member) => member.name === "Chirurg Nou").joinedAt, "02.02.2026");
   const { response: siteSettingsResponse, body: siteSettings } = await json("/api/site-settings");
   assert.equal(siteSettingsResponse.status, 200);
   assert.equal(siteSettings.heroImage, "/assets/hero.png");
