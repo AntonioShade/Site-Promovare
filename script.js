@@ -34,9 +34,7 @@ const pageRoutes = {
   "/cereri-de-audienta": {
     title: "Cereri de audiență",
     section: "service-detail",
-    description: "Solicită o întâlnire cu echipa de conducere a Spitalului Medical Eclipse Tower.",
     details: ["Descrie pe scurt motivul întâlnirii.", "Include numele și datele tale de contact.", "Echipa de Relații Publice îți va răspunde pentru stabilirea detaliilor."],
-    subject: "Cerere de audiență",
     formUrl: "https://docs.google.com/forms/d/e/1FAIpQLScq3rOOmd0S1iUsnTKAgREkLymWRexNCPSytURbYfHmT_IPHQ/viewform",
   },
   "/informatii": {
@@ -44,28 +42,24 @@ const pageRoutes = {
     section: "service-detail",
     description: "Echipa noastră îți stă la dispoziție pentru întrebări și informații generale.",
     details: ["Trimite-ne întrebarea ta într-un mesaj.", "Menționează informația de care ai nevoie.", "Pentru situații urgente, contactează direct serviciile de urgență."],
-    subject: "Solicitare de informații",
   },
   "/criterii-admitere": {
     title: "Criterii admitere",
     section: "service-detail",
     description: "Solicită informații despre criteriile și pașii procesului de admitere.",
     details: ["Cere lista actualizată a criteriilor.", "Pregătește documentele solicitate de echipă.", "Contactează Relațiile Publice pentru clarificări."],
-    subject: "Criterii de admitere",
   },
   "/reintegrare": {
     title: "Reintegrare",
     section: "service-detail",
     description: "Află cum poți solicita sprijin pentru procesul de reintegrare în echipă.",
     details: ["Trimite o cerere cu numele tău complet.", "Descrie pe scurt situația și solicitarea.", "Echipa de conducere îți va comunica pașii următori."],
-    subject: "Cerere de reintegrare",
   },
   "/transfer": {
     title: "Transfer",
     section: "service-detail",
     description: "Ia legătura cu echipa noastră pentru informații despre solicitarea unui transfer.",
     details: ["Precizează tipul transferului solicitat.", "Include datele necesare pentru a putea lua legătura cu tine.", "Relațiile Publice îți vor oferi informații despre pașii următori."],
-    subject: "Cerere de transfer",
   },
 };
 
@@ -82,12 +76,15 @@ function renderServiceDetail(route) {
   const heading = document.createElement("h1");
   heading.className = "service-detail-title";
   heading.textContent = route.title;
-  const description = document.createElement("p");
-  description.className = "service-detail-description";
-  description.textContent = route.description;
   const intro = document.createElement("div");
   intro.className = "service-detail-intro";
-  intro.append(kicker, heading, description);
+  intro.append(kicker, heading);
+  if (route.description) {
+    const description = document.createElement("p");
+    description.className = "service-detail-description";
+    description.textContent = route.description;
+    intro.append(description);
+  }
 
   const list = document.createElement("ol");
   list.className = route.formUrl ? "service-detail-list service-detail-steps" : "service-detail-list";
@@ -101,32 +98,23 @@ function renderServiceDetail(route) {
     item.append(number, text);
     list.append(item);
   });
-  const actions = document.createElement("div");
-  actions.className = "service-detail-actions";
-  const contact = document.createElement("a");
-  contact.className = "button button-primary";
-  contact.href = route.formUrl ?? `mailto:relatiipublice@medicipentruoameni.ro?subject=${encodeURIComponent(route.subject)}`;
   if (route.formUrl) {
+    const actions = document.createElement("div");
+    actions.className = "service-detail-actions service-request-card";
     const icon = document.createElement("span");
     icon.className = "service-request-icon";
     icon.setAttribute("aria-hidden", "true");
     icon.textContent = "＋";
+    const contact = document.createElement("a");
+    contact.className = "button button-primary";
+    contact.href = route.formUrl;
     contact.target = "_blank";
     contact.rel = "noopener noreferrer";
     contact.append(icon, document.createTextNode("Cerere Audiență "));
-  } else {
-    contact.append(document.createTextNode("Scrie echipei de Relații Publice "));
-  }
-  const arrow = document.createElement("span");
-  arrow.setAttribute("aria-hidden", "true");
-  arrow.textContent = "↗";
-  contact.append(arrow);
-  const services = document.createElement("a");
-  services.className = "inline-link";
-  services.href = "/sub-departamente";
-  services.textContent = "Vezi toate sub departamentele";
-  if (route.formUrl) {
-    actions.classList.add("service-request-card");
+    const arrow = document.createElement("span");
+    arrow.setAttribute("aria-hidden", "true");
+    arrow.textContent = "↗";
+    contact.append(arrow);
     const requestCopy = document.createElement("div");
     requestCopy.className = "service-request-copy";
     const requestKicker = document.createElement("span");
@@ -137,11 +125,10 @@ function renderServiceDetail(route) {
     const requestDescription = document.createElement("p");
     requestDescription.textContent = "Completează formularul și echipa noastră te va contacta pentru stabilirea întâlnirii.";
     requestCopy.append(requestKicker, requestHeading, requestDescription);
-    actions.append(requestCopy, contact, services);
+    actions.append(requestCopy, contact);
     serviceDetail.append(intro, list, actions);
   } else {
-    actions.append(contact, services);
-    serviceDetail.append(intro, list, actions);
+    serviceDetail.append(intro, list);
   }
 }
 
