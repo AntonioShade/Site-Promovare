@@ -19,6 +19,13 @@ const dataDirectory = path.join(root, "data");
 const databasePath = process.env.DATABASE_PATH || path.join(dataDirectory, "site.db");
 const sessionDuration = 7 * 24 * 60 * 60 * 1000;
 const uploadLimit = 5 * 1024 * 1024;
+const defaultStaffSheetUrl = "https://docs.google.com/spreadsheets/d/1uaXnzKcNeOOXrQB2TU2aGrq9ZTie4AeFlAUX_FhH06M/gviz/tq?tqx=out:csv&gid=288034789";
+const staffRanks = {
+  "DIRECTOR GENERAL": { style: "org-director", responsibility: "Coordonarea echipei" },
+  "DIRECTOR ADJUNCT": { style: "org-deputy", responsibility: "Management medical și operațional" },
+  "MEDIC INSPECTOR": { style: "org-inspector", responsibility: "Monitorizare și coordonare" },
+  "MEDIC CHIRURG": { style: "org-surgeon", responsibility: "Îngrijire de specialitate" },
+};
 const publicPagePaths = [
   "/",
   "/despre-noi",
@@ -119,9 +126,20 @@ export function initializeDatabase(filename) {
       style TEXT NOT NULL,
       name TEXT NOT NULL,
       image TEXT NOT NULL DEFAULT '',
-      position INTEGER NOT NULL UNIQUE
+      position INTEGER NOT NULL UNIQUE,
+      source_id TEXT
+    );
+    CREATE TABLE IF NOT EXISTS site_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
     );
   `);
+  const staffColumns = db.prepare("PRAGMA table_info(staff)").all();
+  if (!staffColumns.some((column) => column.name === "source_id")) {
+    db.exec("ALTER TABLE staff ADD COLUMN source_id TEXT");
+  }
+  db.exec("CREATE UNIQUE INDEX IF NOT EXISTS staff_source_id_unique ON staff(source_id) WHERE source_id IS NOT NULL");
+  db.prepare("INSERT OR IGNORE INTO site_settings (key, value) VALUES ('hero_image', ?)").run("/assets/hero.png");
 
   const countAnnouncements = db.prepare("SELECT COUNT(*) AS count FROM announcements").get().count;
   if (countAnnouncements === 0) {
@@ -233,10 +251,119 @@ function publicStaff(row) {
   };
 }
 
+export function parseStaffSheetCsv(csv) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let quoted = false;
+
+  for (let index = 0; index < csv.length; index += 1) {
+    const character = csv[index];
+    if (character === '"') {
+      if (quoted && csv[index + 1] === '"') {
+        cell += '"';
+        index += 1;
+      } else {
+        quoted = !quoted;
+      }
+    } else if (character === "," && !quoted) {
+      row.push(cell);
+      cell = "";
+    } else if ((character === "\n" || character === "\r") && !quoted) {
+      if (character === "\r" && csv[index + 1] === "\n") index += 1;
+      row.push(cell);
+      if (row.some((value) => value.trim())) rows.push(row);
+      row = [];
+      cell = "";
+    } else {
+      cell += character;
+    }
+  }
+
+  if (quoted) throw new Error("Documentul personalului conține un câmp CSV incomplet.");
+  if (cell || row.length) {
+    row.push(cell);
+    if (row.some((value) => value.trim())) rows.push(row);
+  }
+  if (rows.length < 2) throw new Error("Documentul personalului nu conține rânduri de date.");
+
+  const records = [];
+  const sourceIds = new Set();
+  for (const values of rows.slice(1)) {
+    const name = values[3]?.trim() ?? "";
+    const rank = values[4]?.trim().toLocaleUpperCase("ro-RO") ?? "";
+    if (!name || !staffRanks[rank]) continue;
+
+    const sourceId = values[1]?.trim() ?? "";
+    if (!sourceId) throw new Error(`Lipsește identificatorul din coloana B pentru persoana „${name}”.`);
+    if (sourceIds.has(sourceId)) throw new Error(`Identificatorul „${sourceId}” apare de mai multe ori în documentul personalului.`);
+    sourceIds.add(sourceId);
+    records.push({ sourceId, name, rank, ...staffRanks[rank] });
+  }
+
+  if (records.length === 0) throw new Error("Nu s-au găsit persoane cu nume și cu unul dintre cele patru grade urmărite.");
+  return records;
+}
+
+export function synchronizeStaff(db, records) {
+  const existingRows = db.prepare("SELECT * FROM staff ORDER BY position").all();
+  const existingBySource = new Map(existingRows.filter((row) => row.source_id).map((row) => [row.source_id, row]));
+  const legacyByStyle = new Map();
+  for (const { style } of Object.values(staffRanks)) {
+    legacyByStyle.set(style, existingRows.filter((row) => !row.source_id && row.style === style));
+  }
+
+  const usedIds = new Set();
+  const existingIds = new Set(existingRows.map((row) => row.id));
+  const assignments = records.map((record, position) => {
+    const row = existingBySource.get(record.sourceId) ?? legacyByStyle.get(record.style)?.shift();
+    const id = row?.id ?? randomUUID();
+    usedIds.add(id);
+    return { ...record, id, position };
+  });
+  const removedImages = existingRows.filter((row) => !usedIds.has(row.id)).map((row) => row.image);
+
+  runInTransaction(db, () => {
+    db.prepare("UPDATE staff SET position = position + 1000000").run();
+    const updateStaff = db.prepare(`
+      UPDATE staff
+      SET source_id = ?, role = ?, responsibility = ?, style = ?, name = ?, position = ?
+      WHERE id = ?
+    `);
+    const insertStaff = db.prepare(`
+      INSERT INTO staff (id, source_id, role, responsibility, style, name, image, position)
+      VALUES (?, ?, ?, ?, ?, ?, '', ?)
+    `);
+
+    for (const record of assignments) {
+      const existing = existingIds.has(record.id);
+      if (existing) {
+        updateStaff.run(record.sourceId, record.rank, record.responsibility, record.style, record.name, record.position, record.id);
+      } else {
+        insertStaff.run(record.id, record.sourceId, record.rank, record.responsibility, record.style, record.name, record.position);
+      }
+    }
+
+    for (const row of existingRows) {
+      if (!usedIds.has(row.id)) db.prepare("DELETE FROM staff WHERE id = ?").run(row.id);
+    }
+  });
+
+  return removedImages;
+}
+
 export function createApp(db) {
   mkdirSync(uploadDirectory, { recursive: true });
   const app = express();
   const production = process.env.NODE_ENV === "production";
+  const staffSheetUrl = process.env.STAFF_SHEET_URL || defaultStaffSheetUrl;
+  const staffSyncInterval = Number(process.env.STAFF_SHEET_SYNC_INTERVAL_MS ?? 60_000);
+  if (!Number.isFinite(staffSyncInterval) || staffSyncInterval < 0) {
+    throw new Error("STAFF_SHEET_SYNC_INTERVAL_MS trebuie să fie un număr pozitiv sau zero.");
+  }
+  let lastStaffSyncAttempt = 0;
+  let staffSyncInFlight;
+  let staffSyncError = false;
   const sessionCookieName = "eclipse_session";
   const dummyHash = bcrypt.hashSync(randomBytes(32).toString("hex"), 12);
   const insertSession = db.prepare("INSERT INTO sessions (token_hash, expires_at) VALUES (?, ?)");
@@ -296,9 +423,46 @@ export function createApp(db) {
     response.json(rows.map(publicAnnouncement));
   });
 
-  app.get("/api/staff", (_request, response) => {
-    const rows = db.prepare("SELECT * FROM staff ORDER BY position").all();
-    response.json(rows.map(publicStaff));
+  async function refreshStaffFromSheet() {
+    if (staffSyncInFlight) return staffSyncInFlight;
+    if (Date.now() - lastStaffSyncAttempt < staffSyncInterval) return;
+
+    lastStaffSyncAttempt = Date.now();
+    staffSyncInFlight = (async () => {
+      try {
+        const result = await fetch(staffSheetUrl, {
+          headers: { Accept: "text/csv" },
+          signal: AbortSignal.timeout(10_000),
+        });
+        if (!result.ok) throw new Error(`Google Sheets a răspuns cu HTTP ${result.status}.`);
+        const records = parseStaffSheetCsv(await result.text());
+        const removedImages = synchronizeStaff(db, records);
+        await Promise.all(removedImages.map(cleanupUploadedImage));
+        staffSyncError = false;
+      } catch (error) {
+        staffSyncError = true;
+        console.error("Sincronizarea organigramei cu Google Sheets a eșuat:", error.message);
+      } finally {
+        staffSyncInFlight = null;
+      }
+    })();
+
+    return staffSyncInFlight;
+  }
+
+  app.get("/api/staff", async (_request, response, next) => {
+    try {
+      await refreshStaffFromSheet();
+      const rows = db.prepare("SELECT * FROM staff ORDER BY position").all();
+      response.json({ members: rows.map(publicStaff), syncError: staffSyncError });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/site-settings", (_request, response) => {
+    const heroImage = db.prepare("SELECT value FROM site_settings WHERE key = 'hero_image'").get().value;
+    response.json({ heroImage });
   });
 
   const loginLimiter = rateLimit({
@@ -356,6 +520,21 @@ export function createApp(db) {
     }
     response.setHeader("Set-Cookie", `${sessionCookieName}=; ${cookieOptions(production).replace(/Max-Age=\d+/, "Max-Age=0")}`);
     response.json({ loggedOut: true });
+  });
+
+  app.put("/api/admin/site-settings/hero-image", uploadParser.single("image"), async (request, response, next) => {
+    let savedImage = "";
+    try {
+      if (!request.file) return response.status(400).json({ error: "Alege imaginea principală nouă." });
+      savedImage = await saveImage(request.file);
+      const existingImage = db.prepare("SELECT value FROM site_settings WHERE key = 'hero_image'").get().value;
+      db.prepare("UPDATE site_settings SET value = ? WHERE key = 'hero_image'").run(savedImage);
+      await cleanupUploadedImage(existingImage);
+      response.json({ heroImage: savedImage });
+    } catch (error) {
+      if (savedImage) await removeUploadedImage(savedImage);
+      next(error);
+    }
   });
 
   app.get("/api/admin/announcements", (_request, response) => {
@@ -420,15 +599,11 @@ export function createApp(db) {
   app.put("/api/admin/staff/:id", uploadParser.single("image"), async (request, response, next) => {
     let savedImage = "";
     try {
-      const name = request.body?.name;
-      if (typeof name !== "string" || name.trim().length < 2 || name.trim().length > 80) {
-        return response.status(400).json({ error: "Numele trebuie să aibă între 2 și 80 de caractere." });
-      }
       const existing = db.prepare("SELECT * FROM staff WHERE id = ?").get(request.params.id);
       if (!existing) return response.status(404).json({ error: "Membrul echipei nu a fost găsit." });
-      if (request.file) savedImage = await saveImage(request.file);
-      const image = savedImage || existing.image;
-      db.prepare("UPDATE staff SET name = ?, image = ? WHERE id = ?").run(name.trim(), image, existing.id);
+      if (!request.file) return response.status(400).json({ error: "Alege o fotografie pentru membrul echipei." });
+      savedImage = await saveImage(request.file);
+      db.prepare("UPDATE staff SET image = ? WHERE id = ?").run(savedImage, existing.id);
       if (savedImage) await cleanupUploadedImage(existing.image);
       const member = db.prepare("SELECT * FROM staff WHERE id = ?").get(existing.id);
       response.json(publicStaff(member));

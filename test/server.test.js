@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { once } from "node:events";
 import { randomBytes } from "node:crypto";
+import { createServer } from "node:http";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -8,12 +9,14 @@ import { after, before, test } from "node:test";
 
 let db;
 let server;
+let sheetServer;
 let baseUrl;
 let adminCookie;
 let temporaryDirectory;
 let createApp;
 let initializeDatabase;
 let testAdminPassword;
+let sheetCsv;
 
 before(async () => {
   temporaryDirectory = await mkdtemp(path.join(os.tmpdir(), "eclipse-site-"));
@@ -21,6 +24,26 @@ before(async () => {
   process.env.ADMIN_USERNAME = "MediciFplayT";
   testAdminPassword = randomBytes(24).toString("base64url");
   process.env.ADMIN_PASSWORD = testAdminPassword;
+  process.env.STAFF_SHEET_SYNC_INTERVAL_MS = "0";
+  sheetCsv = [
+    '"","ID ","NR. INSIGNA ","NUME ","RANK "',
+    '"","9335","001","Darrin Rodriguez","DIRECTOR GENERAL"',
+    '"","10681","002","Antonio Shades","DIRECTOR ADJUNCT"',
+    '"","10682","003","Marius Mark","DIRECTOR ADJUNCT"',
+    '"","10683","004","Erwin Moretti","MEDIC INSPECTOR"',
+    '"","10684","005","Mihail Parvu","MEDIC INSPECTOR"',
+    '"","10685","006","Inspector Test 3","MEDIC INSPECTOR"',
+    '"","10686","007","Vlad Samson","MEDIC CHIRURG"',
+    '"","10687","008","Xender NDC","MEDIC CHIRURG"',
+    '"","10688","009","AlMajdi Tariq","MEDIC CHIRURG"',
+    '"","10690","011","Persoană din alt grad","MEDIC PRIMAR"',
+  ].join("\r\n");
+  sheetServer = createServer((_request, response) => {
+    response.setHeader("Content-Type", "text/csv; charset=utf-8");
+    response.end(sheetCsv);
+  }).listen(0, "127.0.0.1");
+  await once(sheetServer, "listening");
+  process.env.STAFF_SHEET_URL = `http://127.0.0.1:${sheetServer.address().port}/staff.csv`;
   ({ createApp, initializeDatabase } = await import("../server.js"));
   db = initializeDatabase(path.join(temporaryDirectory, "site.db"));
   server = createApp(db).listen(0, "127.0.0.1");
@@ -30,11 +53,14 @@ before(async () => {
 
 after(async () => {
   if (server) await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  if (sheetServer) await new Promise((resolve, reject) => sheetServer.close((error) => error ? reject(error) : resolve()));
   if (db) db.close();
   if (temporaryDirectory) await rm(temporaryDirectory, { recursive: true, force: true });
   delete process.env.UPLOAD_DIRECTORY;
   delete process.env.ADMIN_USERNAME;
   delete process.env.ADMIN_PASSWORD;
+  delete process.env.STAFF_SHEET_URL;
+  delete process.env.STAFF_SHEET_SYNC_INTERVAL_MS;
 });
 
 async function json(url, options) {
@@ -46,7 +72,7 @@ function adminHeaders(extra = {}) {
   return { Cookie: adminCookie, Origin: baseUrl, ...extra };
 }
 
-test("serves the site and persists authenticated announcement and staff edits", async () => {
+test("serves the site, synchronizes Google Sheets staff, and persists authenticated edits", async () => {
   const home = await fetch(baseUrl);
   assert.equal(home.status, 200);
   assert.match(home.headers.get("content-security-policy"), /default-src 'self'/);
@@ -84,12 +110,29 @@ test("serves the site and persists authenticated announcement and staff edits", 
   assert.equal(announcementsResponse.status, 200);
   assert.equal(initialAnnouncements.length, 3);
 
-  const { body: staff } = await json("/api/staff");
+  const { body: staffData } = await json("/api/staff");
+  const staff = staffData.members;
   assert.equal(staff.length, 9);
+  assert.equal(staffData.syncError, false);
   assert.deepEqual(
     staff.reduce((counts, member) => counts.set(member.role, (counts.get(member.role) ?? 0) + 1), new Map()),
-    new Map([["Director General", 1], ["Director Adjunct", 2], ["Medic Inspector", 3], ["Medic Chirurg", 3]]),
+    new Map([["DIRECTOR GENERAL", 1], ["DIRECTOR ADJUNCT", 2], ["MEDIC INSPECTOR", 3], ["MEDIC CHIRURG", 3]]),
   );
+  assert.equal(staff.find((member) => member.role === "DIRECTOR GENERAL").name, "Darrin Rodriguez");
+
+  sheetCsv = sheetCsv
+    .replace("Darrin Rodriguez", "Darrin Actualizat")
+    .replace(
+      '"","10688","009","AlMajdi Tariq","MEDIC CHIRURG"',
+      '"","10688","009","AlMajdi Tariq","MEDIC CHIRURG"\r\n"","10689","010","Chirurg Nou","MEDIC CHIRURG"',
+    );
+  const { body: refreshedStaffData } = await json("/api/staff");
+  assert.equal(refreshedStaffData.members.length, 10);
+  assert.equal(refreshedStaffData.members.find((member) => member.role === "DIRECTOR GENERAL").name, "Darrin Actualizat");
+  assert.equal(refreshedStaffData.members.find((member) => member.name === "Chirurg Nou").role, "MEDIC CHIRURG");
+  const { response: siteSettingsResponse, body: siteSettings } = await json("/api/site-settings");
+  assert.equal(siteSettingsResponse.status, 200);
+  assert.equal(siteSettings.heroImage, "/assets/hero.png");
 
   const { response: signedOutResponse, body: signedOutSession } = await json("/api/admin/session");
   assert.equal(signedOutResponse.status, 200);
@@ -121,6 +164,20 @@ test("serves the site and persists authenticated announcement and staff edits", 
     body: JSON.stringify({ name: "Director fără verificarea origin-ului" }),
   });
   assert.equal(unauthorizedUpdate.status, 403);
+
+  const heroImageForm = new FormData();
+  heroImageForm.set("image", new Blob([
+    Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/pXcAAAAASUVORK5CYII=", "base64"),
+  ], { type: "image/png" }), "imagine-principala.png");
+  const updatedHeroImage = await json("/api/admin/site-settings/hero-image", {
+    method: "PUT",
+    headers: adminHeaders(),
+    body: heroImageForm,
+  });
+  assert.equal(updatedHeroImage.response.status, 200);
+  assert.match(updatedHeroImage.body.heroImage, /^\/uploads\/[a-f0-9-]+\.png$/);
+  const { body: savedSiteSettings } = await json("/api/site-settings");
+  assert.equal(savedSiteSettings.heroImage, updatedHeroImage.body.heroImage);
 
   const announcementForm = new FormData();
   announcementForm.set("title", "Anunț de test");
@@ -159,7 +216,6 @@ test("serves the site and persists authenticated announcement and staff edits", 
   assert.match(imageResponse.headers.get("content-type"), /image\/png/);
 
   const staffForm = new FormData();
-  staffForm.set("name", "Medic de test");
   staffForm.set("image", new Blob([
     Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/pXcAAAAASUVORK5CYII=", "base64"),
   ], { type: "image/png" }), "medic.png");
@@ -169,8 +225,14 @@ test("serves the site and persists authenticated announcement and staff edits", 
     body: staffForm,
   });
   assert.equal(updatedMember.response.status, 200);
-  assert.equal(updatedMember.body.name, "Medic de test");
+  assert.equal(updatedMember.body.name, "Darrin Actualizat");
   assert.match(updatedMember.body.image, /^\/uploads\/[a-f0-9-]+\.png$/);
+
+  sheetCsv = sheetCsv.replace("Darrin Actualizat", "Darrin Sincronizat");
+  const { body: finalStaffData } = await json("/api/staff");
+  const synchronizedMember = finalStaffData.members.find((member) => member.id === "director-general");
+  assert.equal(synchronizedMember.name, "Darrin Sincronizat");
+  assert.equal(synchronizedMember.image, updatedMember.body.image);
 
   const logout = await fetch(`${baseUrl}/api/admin/logout`, { method: "POST", headers: adminHeaders() });
   assert.equal(logout.status, 200);

@@ -21,6 +21,6 @@ Datele persistente sunt salvate în `data/site.db`, iar fotografiile încărcate
 
 ## Administrare
 
-Butonul **Conectare** deschide panoul de administrare. De acolo poți publica anunțuri cu fotografii, modifica ultimele trei anunțuri și actualiza numele și fotografiile celor nouă membri din organigramă. La publicarea unui anunț nou, cel mai vechi dintre cele trei este înlocuit.
+Butonul **Conectare** deschide panoul de administrare. De acolo poți publica anunțuri cu fotografii, modifica ultimele trei anunțuri, actualiza fotografiile membrilor din organigramă și schimba imaginea principală din partea dreaptă a paginii de start. Numele și gradele pentru **DIRECTOR GENERAL**, **DIRECTOR ADJUNCT**, **MEDIC INSPECTOR** și **MEDIC CHIRURG** sunt preluate automat din coloanele D și E ale foii Google Sheets configurate. Lista se verifică la încărcarea paginii și se reîmprospătează automat aproximativ o dată pe minut; rândurile noi cu aceste grade apar automat. Foaia trebuie să poată fi citită de server. La publicarea unui anunț nou, cel mai vechi dintre cele trei este înlocuit.
 
 Imaginile acceptate sunt JPG, PNG și WebP, cu o dimensiune maximă de 5 MB. Pentru publicare pe internet, folosește HTTPS și o găzduire care păstrează între reporniri fișierul SQLite și folderul `uploads/`. Setează `NODE_ENV=production`; dacă aplicația este în spatele unui reverse proxy de încredere, setează și `TRUST_PROXY=1`.

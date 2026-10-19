@@ -58,8 +58,8 @@
         </div>
         <div class="hero-note"><span class="note-icon" aria-hidden="true">✳</span><span>Medicina înseamnă, înainte de toate,<br><strong>grijă pentru fiecare om.</strong></span></div>
       </div>
-      <div class="hero-visual" aria-label="Echipa Spitalului Eclipse, pregătită de Purge" role="img">
-        <div class="hero-image"></div>
+      <div class="hero-visual">
+        <img class="hero-image" id="hero-image" src="/assets/hero.png" alt="Echipa Spitalului Medical Eclipse Tower">
         <div class="hero-shape" aria-hidden="true"></div>
       </div>
       <a class="scroll-cue" href="/despre-noi"><span></span> Descoperă spitalul</a>
@@ -105,6 +105,7 @@
       <div class="org-chart" id="staff-list" aria-label="Organigrama echipei medicale" aria-live="polite">
         <p class="loading-state">Organigrama se încarcă...</p>
       </div>
+      <p class="staff-sync-status" id="staff-sync-status" role="status" hidden></p>
     </section>
 
     <section class="services section-wrap" id="subdepartamente">
@@ -181,6 +182,7 @@
     <div class="admin-tabs" role="tablist" aria-label="Administrare">
       <button class="admin-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="announcements-panel" id="announcements-tab" data-panel="announcements-panel">Anunțuri</button>
       <button class="admin-tab" type="button" role="tab" aria-selected="false" aria-controls="staff-panel" id="staff-tab" data-panel="staff-panel">Organigramă</button>
+      <button class="admin-tab" type="button" role="tab" aria-selected="false" aria-controls="hero-panel" id="hero-tab" data-panel="hero-panel">Imagine principală</button>
     </div>
     <section class="admin-section" id="announcements-panel" role="tabpanel" aria-labelledby="announcements-tab">
       <div class="admin-section-heading"><div><span class="dialog-kicker">Publicare și editare</span><h3>Anunțuri publice</h3></div><p>Sunt afișate întotdeauna cele mai recente trei anunțuri.</p></div>
@@ -200,8 +202,18 @@
       <div class="admin-announcement-list" id="admin-announcement-list"></div>
     </section>
     <section class="admin-section" id="staff-panel" role="tabpanel" aria-labelledby="staff-tab" hidden>
-      <div class="admin-section-heading"><div><span class="dialog-kicker">Echipa medicală</span><h3>Organigramă și profiluri</h3></div><p>Adaugă numele și portretul fiecărui membru.</p></div>
+      <div class="admin-section-heading"><div><span class="dialog-kicker">Echipa medicală</span><h3>Organigramă și fotografii</h3></div><p>Numele și gradele se sincronizează automat din documentul personalului.</p></div>
       <div class="admin-staff-list" id="admin-staff-list"></div>
+    </section>
+    <section class="admin-section" id="hero-panel" role="tabpanel" aria-labelledby="hero-tab" hidden>
+      <div class="admin-section-heading"><div><span class="dialog-kicker">Pagina principală</span><h3>Imaginea din partea dreaptă</h3></div><p>Imaginea nouă va fi afișată tuturor vizitatorilor.</p></div>
+      <form id="hero-image-form" class="editor-form">
+        <img class="hero-image-preview" id="hero-image-preview" src="/assets/hero.png" alt="Previzualizare imagine principală">
+        <label for="hero-image-file">Alege o imagine <span class="input-hint">JPG, PNG sau WebP · maximum 5 MB</span></label>
+        <input id="hero-image-file" name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
+        <p class="form-message" id="hero-image-message" aria-live="polite"></p>
+        <div class="editor-actions"><button class="button button-primary" type="submit" id="hero-image-submit">Salvează imaginea <span aria-hidden="true">↗</span></button></div>
+      </form>
     </section>
   </dialog>
 </body>

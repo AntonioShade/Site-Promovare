@@ -9,10 +9,16 @@ const announcementForm = document.querySelector("#announcement-form");
 const announcementMessage = document.querySelector("#announcement-message");
 const adminAnnouncementList = document.querySelector("#admin-announcement-list");
 const adminStaffList = document.querySelector("#admin-staff-list");
+const staffSyncStatus = document.querySelector("#staff-sync-status");
+const heroImage = document.querySelector("#hero-image");
+const heroImageForm = document.querySelector("#hero-image-form");
+const heroImagePreview = document.querySelector("#hero-image-preview");
+const heroImageMessage = document.querySelector("#hero-image-message");
 const serviceDetail = document.querySelector("#service-detail");
 let isAuthenticated = false;
 let announcements = [];
 let staff = [];
+let heroPreviewUrl = "";
 
 const pageRoutes = {
   "/": { title: "Spitalul Medical Eclipse Tower", section: "acasa" },
@@ -264,9 +270,7 @@ function renderStaff() {
     decorations.append(orbit);
   }
 
-  const orderedStaff = (style) => staff
-    .filter((member) => member.style === style)
-    .sort((first, second) => first.id.localeCompare(second.id, undefined, { numeric: true }));
+  const orderedStaff = (style) => staff.filter((member) => member.style === style);
 
   const makeNode = (member) => {
     const node = document.createElement("div");
@@ -294,6 +298,8 @@ function renderStaff() {
     if (members.length === 0) return false;
     const row = document.createElement("div");
     row.className = `org-tree-row ${levelClass}`;
+    row.style.gridTemplateColumns = `repeat(${members.length}, minmax(0, 1fr))`;
+    row.style.setProperty("--org-branch-inset", `${50 / members.length}%`);
     row.setAttribute("role", "group");
     row.setAttribute("aria-label", label);
     for (const member of members) row.append(makeNode(member));
@@ -358,17 +364,8 @@ function renderAdminStaff() {
     const role = document.createElement("span");
     role.className = "dialog-kicker";
     role.textContent = member.role;
-    const label = document.createElement("label");
-    label.textContent = "Numele medicului";
-    const name = document.createElement("input");
-    name.name = "name";
-    name.type = "text";
-    name.maxLength = 80;
-    name.minLength = 2;
-    name.required = true;
-    name.value = member.name === "Nume în curs de completare" ? "" : member.name;
-    name.placeholder = "Scrie numele complet";
-    label.append(name);
+    const name = document.createElement("strong");
+    name.textContent = member.name;
     const photoLabel = document.createElement("label");
     photoLabel.className = "photo-input-label";
     photoLabel.textContent = member.image ? "Schimbă fotografia" : "Adaugă fotografie";
@@ -376,6 +373,7 @@ function renderAdminStaff() {
     photo.name = "image";
     photo.type = "file";
     photo.accept = "image/jpeg,image/png,image/webp";
+    photo.required = true;
     photoLabel.append(photo);
     const message = document.createElement("span");
     message.className = "form-message";
@@ -384,7 +382,7 @@ function renderAdminStaff() {
     save.type = "submit";
     save.className = "button button-secondary";
     save.textContent = "Salvează profilul";
-    fields.append(role, label, photoLabel, message, save);
+    fields.append(role, name, photoLabel, message, save);
     form.append(portrait, fields);
     form.addEventListener("submit", saveStaffMember);
     adminStaffList.append(form);
@@ -417,15 +415,39 @@ function resetAnnouncementForm() {
 }
 
 async function loadPublicContent() {
-  const [announcementData, staffData] = await Promise.all([
+  const [announcementData, staffData, siteSettings] = await Promise.all([
     api("/api/announcements"),
     api("/api/staff"),
+    api("/api/site-settings"),
   ]);
   announcements = announcementData;
-  staff = staffData;
+  staff = staffData.members;
+  staffSyncStatus.hidden = !staffData.syncError;
+  staffSyncStatus.textContent = staffData.syncError
+    ? "Sincronizarea cu documentul personalului nu este disponibilă momentan. Se afișează ultima listă salvată."
+    : "";
+  heroImage.src = siteSettings.heroImage;
+  heroImagePreview.src = siteSettings.heroImage;
   renderAnnouncements();
   renderStaff();
 }
+
+async function refreshStaffFromSheet() {
+  try {
+    const staffData = await api("/api/staff");
+    staff = staffData.members;
+    staffSyncStatus.hidden = !staffData.syncError;
+    staffSyncStatus.textContent = staffData.syncError
+      ? "Sincronizarea cu documentul personalului nu este disponibilă momentan. Se afișează ultima listă salvată."
+      : "";
+    renderStaff();
+  } catch (error) {
+    staffSyncStatus.textContent = `Lista personalului nu a putut fi actualizată: ${error.message}`;
+    staffSyncStatus.hidden = false;
+  }
+}
+
+window.setInterval(refreshStaffFromSheet, 60_000);
 
 async function refreshSession() {
   try {
@@ -537,6 +559,36 @@ announcementForm.addEventListener("submit", async (event) => {
 });
 
 document.querySelector("#announcement-cancel").addEventListener("click", resetAnnouncementForm);
+
+heroImageForm.elements.image.addEventListener("change", () => {
+  const file = heroImageForm.elements.image.files[0];
+  if (heroPreviewUrl) URL.revokeObjectURL(heroPreviewUrl);
+  heroPreviewUrl = file ? URL.createObjectURL(file) : "";
+  heroImagePreview.src = heroPreviewUrl || heroImage.src;
+});
+
+heroImageForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const submitButton = document.querySelector("#hero-image-submit");
+  submitButton.disabled = true;
+  setMessage(heroImageMessage, "Se salvează imaginea...");
+  try {
+    const result = await api("/api/admin/site-settings/hero-image", {
+      method: "PUT",
+      body: new FormData(heroImageForm),
+    });
+    heroImage.src = result.heroImage;
+    heroImagePreview.src = result.heroImage;
+    heroImageForm.reset();
+    if (heroPreviewUrl) URL.revokeObjectURL(heroPreviewUrl);
+    heroPreviewUrl = "";
+    setMessage(heroImageMessage, "Imaginea principală a fost actualizată.");
+  } catch (error) {
+    setMessage(heroImageMessage, error.message, true);
+  } finally {
+    submitButton.disabled = false;
+  }
+});
 
 async function saveStaffMember(event) {
   event.preventDefault();
