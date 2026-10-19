@@ -441,6 +441,7 @@ export function createApp(db) {
   app.get(publicPagePaths, (_request, response) => response.sendFile(path.join(publicDirectory, "index.html")));
   app.get("/index.html", (_request, response) => response.sendFile(path.join(publicDirectory, "index.html")));
   app.get("/styles.css", (_request, response) => response.sendFile(path.join(publicDirectory, "styles.css")));
+  app.use("/assets", express.static(path.join(publicDirectory, "assets"), { dotfiles: "deny", fallthrough: false, index: false }));
   app.get("/script.js", (_request, response) => response.sendFile(path.join(publicDirectory, "script.js")));
   app.use("/api", (_request, response) => response.status(404).json({ error: "Ruta API nu a fost găsită." }));
   app.use((_request, response) => response.status(404).send("Pagina nu a fost găsită."));
