@@ -46,20 +46,42 @@ const pageRoutes = {
   "/criterii-admitere": {
     title: "Criterii admitere",
     section: "service-detail",
-    description: "Solicită informații despre criteriile și pașii procesului de admitere.",
-    details: ["Cere lista actualizată a criteriilor.", "Pregătește documentele solicitate de echipă.", "Contactează Relațiile Publice pentru clarificări."],
+    description: "Informații importante despre cerințele și regulile departamentului.",
+    infoCards: [
+      { title: "Ore necesare", text: "Minimum 50 de ore pentru a aplica în departament.", icon: "calendar" },
+      { title: "Personal nou", text: "CK îți permite să aplici chiar și cu 0 ore.", icon: "person" },
+      { title: "Estetică", text: "Tatuajele de pe față trebuie eliminate la intrare.", icon: "shield" },
+      { title: "Complexitate", text: "Structura este complexă și necesită timp de învățare.", icon: "network" },
+      { title: "Regulament", text: "Regulamentul pentru susținerea testelor se găsește pe forum.", icon: "document" },
+      { title: "Blacklist", text: "Prea multe intrări și ieșiri pot duce la restricții temporare.", icon: "ban" },
+      { title: "Joburi externe", text: "Odată cu intrarea în departament, nu poți avea alt job, part-time sau full-time.", icon: "briefcase" },
+      { title: "Eligibilitate", text: "Este necesar să nu ai sancțiuni grave și să ai o atitudine matură, IC și OOC.", icon: "check" },
+      { title: "Prezență", text: "Activitatea regulată este obligatorie pentru a rămâne în departament.", icon: "badge" },
+    ],
   },
   "/reintegrare": {
     title: "Reintegrare",
     section: "service-detail",
-    description: "Află cum poți solicita sprijin pentru procesul de reintegrare în echipă.",
-    details: ["Trimite o cerere cu numele tău complet.", "Descrie pe scurt situația și solicitarea.", "Echipa de conducere îți va comunica pașii următori."],
+    description: "Condițiile și termenele de reintegrare în departament.",
+    infoCards: [
+      { title: "Foste grade 200 și 300", text: "Reintră ca grad 400. Reintegrarea este posibilă în termen de până la 4 luni de la demisie.", icon: "person" },
+      { title: "Fost grad 100", text: "Reintră ca grad 300. Reintegrarea este posibilă în termen de până la 4 luni de la demisie.", icon: "person" },
+      { title: "Foste grade de conducere", text: "Vor fi reintegrate ca grad 200 și pot beneficia de reintegrare în maximum 2 luni.", icon: "badge" },
+      { title: "Reintegrare după 2 luni", text: "Reintegrarea se poate face o singură dată și după 2 luni, însă cu beneficiile gradului 300.", icon: "calendar" },
+      { title: "Certificate obligatorii", text: "Cei care revin prin reintegrare trebuie să obțină certificatele RADIO / BLS / ALS în primele două zile.", icon: "document" },
+    ],
   },
   "/transfer": {
     title: "Transfer",
     section: "service-detail",
-    description: "Ia legătura cu echipa noastră pentru informații despre solicitarea unui transfer.",
-    details: ["Precizează tipul transferului solicitat.", "Include datele necesare pentru a putea lua legătura cu tine.", "Relațiile Publice îți vor oferi informații despre pașii următori."],
+    description: "Gradele acordate în urma transferului, în funcție de gradul deținut.",
+    infoCards: [
+      { title: "Agent Pază+ [AGP+]", text: "Va primi în urma transferului gradul de BRANCARDIER.", icon: "shield" },
+      { title: "Cadet [CD]", text: "Va primi în urma transferului gradul de BRANCARDIER.", icon: "person" },
+      { title: "Agent [AG]", text: "Va primi în urma transferului gradul de MEDIC STAGIAR.", icon: "briefcase" },
+      { title: "Agent Principal+ [AP+]", text: "Va primi în urma transferului gradul de MEDIC REZIDENT.", icon: "badge" },
+      { title: "Gradele CONDUCERII [PJ + PENITENCIAR]", text: "Vor primi în urma transferului gradul de MEDIC REZIDENT, cu AVANSARE MAI RAPIDĂ.", icon: "check" },
+    ],
   },
 };
 
@@ -70,12 +92,28 @@ function renderServiceDetail(route) {
     : "service-detail section-wrap";
   const kicker = document.createElement("p");
   kicker.className = "section-kicker";
-  const kickerNumber = document.createElement("span");
-  kickerNumber.textContent = "Informații utile";
-  kicker.append(kickerNumber, document.createTextNode(" Servicii pentru comunitate"));
+  if (route.infoCards) {
+    const emblem = document.createElement("span");
+    emblem.className = "service-info-kicker-icon";
+    emblem.setAttribute("aria-hidden", "true");
+    emblem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg>';
+    kicker.append(emblem, document.createTextNode("Informații utile"));
+  } else {
+    const kickerNumber = document.createElement("span");
+    kickerNumber.textContent = "Informații utile";
+    kicker.append(kickerNumber, document.createTextNode(" Servicii pentru comunitate"));
+  }
   const heading = document.createElement("h1");
   heading.className = "service-detail-title";
-  heading.textContent = route.title;
+  if (route.infoCards) {
+    const titleWords = route.title.split(" ");
+    heading.append(
+      document.createTextNode(`${titleWords.slice(0, -1).join(" ")} `),
+      Object.assign(document.createElement("span"), { textContent: titleWords.at(-1) }),
+    );
+  } else {
+    heading.textContent = route.title;
+  }
   const intro = document.createElement("div");
   intro.className = "service-detail-intro";
   intro.append(kicker, heading);
@@ -84,6 +122,62 @@ function renderServiceDetail(route) {
     description.className = "service-detail-description";
     description.textContent = route.description;
     intro.append(description);
+  }
+
+  if (route.infoCards) {
+    const cards = document.createElement("div");
+    cards.className = "service-info-grid";
+    route.infoCards.forEach((info, index) => {
+      const card = document.createElement("article");
+      card.className = `service-info-card service-info-card-${(index % 9) + 1}`;
+      const icon = document.createElement("span");
+      icon.className = "service-info-icon";
+      icon.setAttribute("aria-hidden", "true");
+      const iconSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      iconSvg.setAttribute("viewBox", "0 0 24 24");
+      iconSvg.setAttribute("fill", "none");
+      iconSvg.setAttribute("stroke", "currentColor");
+      iconSvg.setAttribute("stroke-width", "1.8");
+      iconSvg.setAttribute("stroke-linecap", "round");
+      iconSvg.setAttribute("stroke-linejoin", "round");
+      const iconPaths = {
+        calendar: ["M7 3v3M17 3v3M4 9h16", "M5 5h14a1 1 0 0 1 1 1v13H4V6a1 1 0 0 1 1-1Z", "M8 13h2M14 13h2M8 16h2"],
+        person: ["M20 21a8 8 0 0 0-16 0", "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"],
+        shield: ["M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z", "m9 12 2 2 4-4"],
+        network: ["M12 8V4M6 20v-4m12 4v-4M12 12H6m12 0h-6", "M9 4h6v4H9zM3 16h6v4H3zM15 16h6v4h-6z"],
+        document: ["M7 3h10l3 3v15H4V3h3Z", "M14 3v4h5M8 12h8M8 16h8"],
+        ban: ["M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z", "m5 5 14 14"],
+        briefcase: ["M3 8h18v13H3zM8 8V5h8v3M3 13h18M10 13v2h4v-2"],
+        check: ["M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z", "m7 12 3 3 7-7"],
+        badge: ["M12 3 15 5l4 .5.5 4 2 2.5-2 2.5-.5 4-4 .5-3 2-3-2-4-.5-.5-4L2.5 12l2-2.5.5-4L9 5l3-2Z", "m9 12 2 2 4-4"],
+      }[info.icon] ?? ["M12 5v14M5 12h14"];
+      iconPaths.forEach((pathData) => {
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", pathData);
+        iconSvg.append(path);
+      });
+      icon.append(iconSvg);
+      const number = document.createElement("span");
+      number.className = "service-info-number";
+      number.textContent = String(index + 1).padStart(2, "0");
+      const heading = document.createElement("h2");
+      heading.textContent = info.title;
+      const text = document.createElement("p");
+      text.textContent = info.text;
+      const arrow = document.createElement("span");
+      arrow.className = "service-info-arrow";
+      arrow.setAttribute("aria-hidden", "true");
+      arrow.textContent = "→";
+      card.append(icon, number, heading, text, arrow);
+      cards.append(card);
+    });
+    const ornament = document.createElement("div");
+    ornament.className = "service-info-ornament";
+    ornament.setAttribute("aria-hidden", "true");
+    ornament.append(document.createElement("span"), Object.assign(document.createElement("span"), { textContent: "★" }), document.createElement("span"));
+    serviceDetail.classList.add("service-detail-info-page");
+    serviceDetail.append(intro, cards, ornament);
+    return;
   }
 
   const list = document.createElement("ol");

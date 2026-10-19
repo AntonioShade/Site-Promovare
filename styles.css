@@ -73,7 +73,10 @@ h1, h2, h3, p { margin-top: 0; }
 .scroll-cue span { width: 22px; height: 1px; background: var(--coral); }
 
 .section-wrap { max-width: 1230px; margin: 0 auto; padding-left: 5%; padding-right: 5%; }
-.intro { padding-top: 96px; padding-bottom: 99px; border-top: 1px solid var(--line); }
+.intro { display: grid; max-width: none; min-height: 430px; place-items: center; padding: 56px 5%; border-top: 1px solid var(--line); background: linear-gradient(110deg, rgba(5, 11, 21, .58), rgba(9, 13, 24, .52)), url("/assets/background.png") center 42% / cover; }
+.about-panel { width: min(100%, 1060px); padding: clamp(26px, 4vw, 48px); background: rgba(9, 16, 28, .82); border: 1px solid rgba(208, 222, 241, .28); border-radius: 14px; box-shadow: 0 18px 55px rgba(0, 0, 0, .35); }
+.about-title { margin: 0 0 20px; color: #f7f8fb; font-family: var(--font-display); font-size: clamp(28px, 3vw, 38px); font-weight: 700; text-align: center; }
+.about-description { margin: 0; color: #e4eaf2; font-size: clamp(15px, 1.4vw, 17px); line-height: 1.85; }
 .section-kicker { margin-bottom: 18px; }
 .section-kicker > span { color: #8094ad; }
 .intro-content { display: grid; grid-template-columns: 1fr .76fr; align-items: start; gap: 11%; }
@@ -225,10 +228,43 @@ h1, h2, h3, p { margin-top: 0; }
 .service-request-copy p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
 .service-detail-audience .service-request-card .button { justify-content: flex-start; min-height: 54px; gap: 12px; }
 .service-request-icon { display: grid; width: 27px; height: 27px; place-items: center; background: rgba(255, 255, 255, .14); border-radius: 50%; font-size: 20px !important; }
+.service-detail-info-page { --info-accent: #4795f5; max-width: 1120px; min-height: calc(100vh - 82px); padding-top: 50px; padding-bottom: 75px; }
+.service-detail-info-page .service-detail-intro { max-width: 760px; margin: 0 auto 28px; text-align: center; }
+.service-detail-info-page .section-kicker { justify-content: center; gap: 11px; color: var(--info-accent); }
+.service-detail-info-page .section-kicker::before, .service-detail-info-page .section-kicker::after { width: 38px; height: 1px; background: color-mix(in srgb, var(--info-accent) 75%, transparent); content: ""; }
+.service-info-kicker-icon { display: grid; width: 23px; height: 23px; place-items: center; }
+.service-info-kicker-icon svg { width: 22px; height: 22px; }
+.service-detail-info-page .service-detail-title { margin-bottom: 9px; font-size: clamp(42px, 5vw, 62px); font-weight: 700; }
+.service-detail-info-page .service-detail-title span { color: var(--info-accent); }
+.service-detail-info-page .service-detail-description { margin: 0 auto; }
+.service-info-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
+.service-info-card { --card-accent: #168bff; position: relative; min-height: 170px; overflow: hidden; padding: 17px 20px 18px; background: radial-gradient(ellipse at 15% 0, color-mix(in srgb, var(--card-accent) 14%, transparent), transparent 65%), linear-gradient(145deg, #102341, #0b1930); border: 1px solid color-mix(in srgb, var(--card-accent) 78%, #14294a); border-radius: 12px; transition: background .2s ease, transform .2s ease; }
+.service-info-card::before { position: absolute; bottom: -1px; left: -1px; width: 46px; height: 36px; background: color-mix(in srgb, var(--card-accent) 58%, transparent); clip-path: polygon(0 0, 100% 100%, 0 100%); content: ""; }
+.service-info-card::after { position: absolute; bottom: -1px; left: -1px; width: 26px; height: 22px; background: color-mix(in srgb, var(--card-accent) 85%, transparent); clip-path: polygon(0 0, 100% 100%, 0 100%); content: ""; }
+.service-info-card:hover { transform: translateY(-2px); background: radial-gradient(ellipse at 15% 0, color-mix(in srgb, var(--card-accent) 19%, transparent), transparent 65%), linear-gradient(145deg, #142b4d, #0e1d36); }
+.service-info-card-2 { --card-accent: #145cff; }
+.service-info-card-3 { --card-accent: #05b4b8; }
+.service-info-card-4 { --card-accent: #7046e8; }
+.service-info-card-5 { --card-accent: #0876ec; }
+.service-info-card-6 { --card-accent: #ec0876; }
+.service-info-card-7 { --card-accent: #039ca9; }
+.service-info-card-8 { --card-accent: #633be8; }
+.service-info-card-9 { --card-accent: #0876ec; }
+.service-info-icon { display: grid; width: 54px; height: 54px; margin-bottom: 9px; place-items: center; color: #edf4ff; background: linear-gradient(145deg, color-mix(in srgb, var(--card-accent) 90%, white), color-mix(in srgb, var(--card-accent) 84%, #061746)); border-radius: 20px; }
+.service-info-icon svg { width: 23px; height: 23px; }
+.service-info-number { position: absolute; top: 17px; right: 17px; color: color-mix(in srgb, var(--card-accent) 59%, #314767); font-family: var(--font-display); font-size: 25px; font-weight: 800; line-height: 1; }
+.service-info-card h2 { margin: 0 0 5px; color: #f4f7fc; font-family: var(--font-display); font-size: 15px; font-weight: 700; line-height: 1.4; }
+.service-info-card h2, .service-info-card p { position: relative; z-index: 1; max-width: calc(100% - 20px); }
+.service-info-card p { margin: 0; color: #b7c4d5; font-size: 12px; line-height: 1.6; }
+.service-info-arrow { position: absolute; right: 13px; bottom: 12px; z-index: 1; display: grid; width: 25px; height: 25px; place-items: center; color: #edf4ff; background: rgba(6, 21, 45, .65); border: 1px solid var(--card-accent); border-radius: 50%; font-size: 15px; line-height: 1; }
+.service-info-ornament { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 19px auto 0; color: var(--info-accent); }
+.service-info-ornament span:first-child, .service-info-ornament span:last-child { width: 90px; height: 1px; background: color-mix(in srgb, var(--info-accent) 68%, transparent); }
+.service-info-ornament span:nth-child(2) { font-size: 17px; }
 
 @media (max-width: 850px) {
   .department-list { grid-template-columns: 1fr; }
   .department-group { padding: 18px; }
+  .service-info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 .contact-banner { max-width: 1120px; margin: 0 auto 85px; padding: 32px 38px; display: flex; align-items: center; gap: 20px; background: #111f33; }
@@ -332,7 +368,7 @@ h1, h2, h3, p { margin-top: 0; }
   .hero-visual { justify-self: center; }
   .scroll-cue { left: 6%; }
   .section-wrap { padding-left: 6%; padding-right: 6%; }
-  .intro { padding-top: 75px; padding-bottom: 75px; }
+  .intro { min-height: 400px; padding: 42px 6%; }
   .announcements { padding-top: 75px; padding-bottom: 75px; }
   .announcement-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .announcement-image { height: 200px; }
@@ -367,10 +403,11 @@ h1, h2, h3, p { margin-top: 0; }
   .department-member-row.is-solo .department-member { grid-column: auto; }
   .admin-department-editor { padding: 12px; }
   .department-settings-form, .department-member-editor { padding: 10px; }
-  .intro { padding-top: 61px; padding-bottom: 62px; }
-  .intro-content { grid-template-columns: 1fr; gap: 20px; }
-  .intro h2, .section-heading h2 { font-size: 41px; }
-  .intro-content > div p { font-size: 13px; }
+  .intro { min-height: 400px; padding: 32px 7%; }
+  .about-panel { padding: 25px 21px; border-radius: 11px; }
+  .about-title { margin-bottom: 15px; font-size: 28px; }
+  .about-description { font-size: 15px; line-height: 1.75; }
+  .section-heading h2 { font-size: 41px; }
   .announcements { padding-top: 60px; padding-bottom: 62px; }
   .section-heading { align-items: start; flex-direction: column; gap: 12px; margin-bottom: 26px; }
   .heading-aside br { display: none; }
@@ -396,6 +433,13 @@ h1, h2, h3, p { margin-top: 0; }
   .org-responsibility { font-size: 7px; }
   .services { padding-top: 62px; padding-bottom: 62px; }
   .service-detail { min-height: 500px; padding-top: 62px; padding-bottom: 68px; }
+  .service-detail-info-page { min-height: calc(100vh - 82px); padding-top: 48px; padding-bottom: 58px; }
+  .service-detail-info-page .service-detail-intro { margin-bottom: 23px; }
+  .service-info-grid { grid-template-columns: 1fr; gap: 10px; }
+  .service-info-card { min-height: 146px; padding: 15px 17px; }
+  .service-info-number { top: 15px; right: 16px; font-size: 21px; }
+  .service-info-ornament { margin-top: 16px; }
+  .service-info-card h2 { min-height: 27px; display: flex; align-items: center; margin-bottom: 7px; }
   .service-detail-audience { grid-template-columns: 1fr; grid-template-areas: "intro" "steps" "request"; gap: 21px; min-height: initial; padding-top: 60px; padding-bottom: 70px; }
   .service-detail-audience .service-detail-title { font-size: clamp(42px, 11vw, 58px); }
   .service-detail-audience .service-detail-steps { grid-template-columns: 1fr; }
