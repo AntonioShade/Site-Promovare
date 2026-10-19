@@ -1,0 +1,40 @@
+{
+  "rewrites": [
+    {
+      "source": "/despre-noi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/anunturi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/conducere",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/sub-departamente",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cereri-de-audienta",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/informatii",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/criterii-admitere",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/reintegrare",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/transfer",
+      "destination": "/index.html"
+    }
+  ]
+}

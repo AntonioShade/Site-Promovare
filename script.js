@@ -120,7 +120,13 @@ function applyPageRoute() {
 applyPageRoute();
 
 async function api(url, options = {}) {
-  const response = await fetch(url, { credentials: "same-origin", ...options });
+  let response;
+  try {
+    response = await fetch(url, { credentials: "same-origin", ...options });
+  } catch (error) {
+    if (!(error instanceof TypeError)) throw error;
+    throw new Error("Serverul nu răspunde. Pornește site-ul cu `npm start` și deschide http://localhost:3000.");
+  }
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || "Cererea nu a putut fi finalizată.");
   return data;

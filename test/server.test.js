@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { once } from "node:events";
 import { randomBytes } from "node:crypto";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
@@ -63,6 +63,13 @@ test("serves the site and persists authenticated announcement and staff edits", 
     "/reintegrare",
     "/transfer",
   ];
+  const vercelConfig = JSON.parse(await readFile(new URL("../vercel.json", import.meta.url), "utf8"));
+  assert.deepEqual(
+    new Set(vercelConfig.rewrites.map((rewrite) => rewrite.source)),
+    new Set(pagePaths),
+  );
+  assert.ok(vercelConfig.rewrites.every((rewrite) => rewrite.destination === "/index.html"));
+
   const pages = await Promise.all(pagePaths.map(async (pathname) => ({
     pathname,
     response: await fetch(`${baseUrl}${pathname}`),

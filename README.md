@@ -4,6 +4,8 @@ Site static cu administrare printr-un server Node.js și SQLite. Anunțurile și
 
 Fiecare element din meniul principal are propria adresă și pagină: `/despre-noi`, `/anunturi`, `/conducere`, `/sub-departamente`, `/cereri-de-audienta`, `/informatii`, `/criterii-admitere`, `/reintegrare` și `/transfer`. Navigarea schimbă pagina, nu derulează către o secțiune din pagina principală.
 
+Configurația `vercel.json` redirecționează aceste adrese către pagina aplicației, pentru ca deschiderea directă sau reîncărcarea unei pagini să funcționeze și după publicarea pe Vercel. După adăugarea sau modificarea acestei configurații, publică din nou site-ul (redeploy).
+
 ## Pornire pe Windows
 
 Ai nevoie de Node.js 22.13 sau mai nou.
