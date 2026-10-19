@@ -79,6 +79,63 @@ const initialStaff = [
   ["medic-chirurg-3", "Medic Chirurg", "Îngrijire de specialitate", "org-surgeon"],
 ];
 
+const initialDepartments = [
+  {
+    id: "medicina-muncii",
+    title: "Medicina Muncii Los Santos",
+    subtitle: "Medicina Muncii",
+    color: "#087afa",
+    members: [
+      ["Freya NDC", "Inspector General M.M.L.S."],
+      ["Mihai Macelaru", "Inspector Șef M.M.L.S."],
+    ],
+  },
+  {
+    id: "securitate-sanatate-munca",
+    title: "Securitatea și Sănătatea în Muncă Los Santos",
+    subtitle: "Securitatea și Sănătatea în Muncă",
+    color: "#1b5945",
+    members: [
+      ["Erwin Moretti", "Inspector General S.S.M.L.S."],
+      ["Inez Cristina", "Inspector Șef S.S.M.L.S."],
+    ],
+  },
+  {
+    id: "directia-sanatate",
+    title: "Direcția de Sănătate Los Santos",
+    subtitle: "Direcția de Sănătate",
+    color: "#b9004e",
+    members: [
+      ["Stefano Ravioli", "Inspector General D.S.L.S."],
+      ["VACANT", "Inspector Șef D.S.L.S."],
+    ],
+  },
+  {
+    id: "inspectoratul-isu",
+    title: "Inspectoratul pentru Situații de Urgență Los Santos",
+    subtitle: "Inspectoratul pentru Situații de Urgență",
+    color: "#a13736",
+    members: [
+      ["Lupu Ovidiu", "Inspector General I.S.U.L.S."],
+      ["VACANT", "Inspector Șef I.S.U.L.S."],
+    ],
+  },
+  {
+    id: "relatii-publice",
+    title: "Relații Publice Los Santos",
+    subtitle: "Relații Publice",
+    color: "#5600a8",
+    members: [["Xender NDC", "Manager Relații Publice"]],
+  },
+  {
+    id: "consilieri-psihologici",
+    title: "Consilieri Psihologici Los Santos",
+    subtitle: "Consiliere și sprijin",
+    color: "#d40070",
+    members: [["Eva Méndez", "Manager Consilieri Psihologici"]],
+  },
+];
+
 const imageTypes = [
   { mime: "image/jpeg", extension: ".jpg", signature: (buffer) => buffer.length > 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff },
   { mime: "image/png", extension: ".png", signature: (buffer) => buffer.length > 8 && buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) },
@@ -133,6 +190,24 @@ export function initializeDatabase(filename) {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS departments (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      subtitle TEXT NOT NULL DEFAULT '',
+      color TEXT NOT NULL DEFAULT '#087afa',
+      emblem TEXT NOT NULL DEFAULT '',
+      position INTEGER NOT NULL UNIQUE
+    );
+    CREATE TABLE IF NOT EXISTS department_members (
+      id TEXT PRIMARY KEY,
+      department_id TEXT NOT NULL REFERENCES departments(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      title TEXT NOT NULL,
+      contact TEXT NOT NULL DEFAULT '',
+      image TEXT NOT NULL DEFAULT '',
+      position INTEGER NOT NULL,
+      UNIQUE (department_id, position)
+    );
   `);
   const staffColumns = db.prepare("PRAGMA table_info(staff)").all();
   if (!staffColumns.some((column) => column.name === "source_id")) {
@@ -140,6 +215,25 @@ export function initializeDatabase(filename) {
   }
   db.exec("CREATE UNIQUE INDEX IF NOT EXISTS staff_source_id_unique ON staff(source_id) WHERE source_id IS NOT NULL");
   db.prepare("INSERT OR IGNORE INTO site_settings (key, value) VALUES ('hero_image', ?)").run("/assets/hero.png");
+
+  if (db.prepare("SELECT COUNT(*) AS count FROM departments").get().count === 0) {
+    const insertDepartment = db.prepare(`
+      INSERT INTO departments (id, title, subtitle, color, position)
+      VALUES (?, ?, ?, ?, ?)
+    `);
+    const insertDepartmentMember = db.prepare(`
+      INSERT INTO department_members (id, department_id, name, title, position)
+      VALUES (?, ?, ?, ?, ?)
+    `);
+    runInTransaction(db, () => {
+      initialDepartments.forEach((department, position) => {
+        insertDepartment.run(department.id, department.title, department.subtitle, department.color, position);
+        department.members.forEach(([name, title], memberPosition) => {
+          insertDepartmentMember.run(randomUUID(), department.id, name, title, memberPosition);
+        });
+      });
+    });
+  }
 
   const countAnnouncements = db.prepare("SELECT COUNT(*) AS count FROM announcements").get().count;
   if (countAnnouncements === 0) {
@@ -352,6 +446,35 @@ export function synchronizeStaff(db, records) {
   return removedImages;
 }
 
+function publicDepartment(db, department) {
+  return {
+    id: department.id,
+    title: department.title,
+    subtitle: department.subtitle,
+    color: department.color,
+    emblem: department.emblem,
+    members: db.prepare("SELECT * FROM department_members WHERE department_id = ? ORDER BY position").all(department.id).map((member) => ({
+      id: member.id,
+      name: member.name,
+      title: member.title,
+      contact: member.contact,
+      image: member.image,
+    })),
+  };
+}
+
+function validDepartment(title, subtitle, color) {
+  return typeof title === "string" && title.trim().length > 0 && title.trim().length <= 100
+    && typeof subtitle === "string" && subtitle.trim().length <= 120
+    && typeof color === "string" && /^#[0-9a-fA-F]{6}$/.test(color);
+}
+
+function validDepartmentMember(name, title, contact) {
+  return typeof name === "string" && name.trim().length > 0 && name.trim().length <= 80
+    && typeof title === "string" && title.trim().length > 0 && title.trim().length <= 120
+    && typeof contact === "string" && contact.trim().length <= 200;
+}
+
 export function createApp(db) {
   mkdirSync(uploadDirectory, { recursive: true });
   const app = express();
@@ -460,6 +583,11 @@ export function createApp(db) {
     }
   });
 
+  app.get("/api/departments", (_request, response) => {
+    const departments = db.prepare("SELECT * FROM departments ORDER BY position").all();
+    response.json(departments.map((department) => publicDepartment(db, department)));
+  });
+
   app.get("/api/site-settings", (_request, response) => {
     const heroImage = db.prepare("SELECT value FROM site_settings WHERE key = 'hero_image'").get().value;
     response.json({ heroImage });
@@ -533,6 +661,123 @@ export function createApp(db) {
       response.json({ heroImage: savedImage });
     } catch (error) {
       if (savedImage) await removeUploadedImage(savedImage);
+      next(error);
+    }
+  });
+
+  app.post("/api/admin/departments", (request, response) => {
+    const { title, subtitle = "", color } = request.body ?? {};
+    if (!validDepartment(title, subtitle, color)) {
+      return response.status(400).json({ error: "Completează corect denumirea, descrierea și culoarea departamentului." });
+    }
+    const id = randomUUID();
+    const position = db.prepare("SELECT COALESCE(MAX(position), -1) + 1 AS position FROM departments").get().position;
+    db.prepare("INSERT INTO departments (id, title, subtitle, color, position) VALUES (?, ?, ?, ?, ?)")
+      .run(id, title.trim(), subtitle.trim(), color, position);
+    response.status(201).json(publicDepartment(db, db.prepare("SELECT * FROM departments WHERE id = ?").get(id)));
+  });
+
+  app.put("/api/admin/departments/:id", uploadParser.single("emblem"), async (request, response, next) => {
+    let savedEmblem = "";
+    try {
+      const { title, subtitle = "", color } = request.body ?? {};
+      if (!validDepartment(title, subtitle, color)) {
+        return response.status(400).json({ error: "Completează corect denumirea, descrierea și culoarea departamentului." });
+      }
+      const existing = db.prepare("SELECT * FROM departments WHERE id = ?").get(request.params.id);
+      if (!existing) return response.status(404).json({ error: "Departamentul nu a fost găsit." });
+      if (request.file) savedEmblem = await saveImage(request.file);
+      const emblem = savedEmblem || existing.emblem;
+      db.prepare("UPDATE departments SET title = ?, subtitle = ?, color = ?, emblem = ? WHERE id = ?")
+        .run(title.trim(), subtitle.trim(), color, emblem, existing.id);
+      if (savedEmblem) await cleanupUploadedImage(existing.emblem);
+      response.json(publicDepartment(db, db.prepare("SELECT * FROM departments WHERE id = ?").get(existing.id)));
+    } catch (error) {
+      if (savedEmblem) await removeUploadedImage(savedEmblem);
+      next(error);
+    }
+  });
+
+  app.delete("/api/admin/departments/:id", async (request, response, next) => {
+    try {
+      const existing = db.prepare("SELECT * FROM departments WHERE id = ?").get(request.params.id);
+      if (!existing) return response.status(404).json({ error: "Departamentul nu a fost găsit." });
+      const images = db.prepare("SELECT image FROM department_members WHERE department_id = ?").all(existing.id).map((member) => member.image);
+      images.push(existing.emblem);
+      db.prepare("DELETE FROM departments WHERE id = ?").run(existing.id);
+      await Promise.all(images.map(cleanupUploadedImage));
+      response.json({ deleted: true });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/admin/departments/:id/members", uploadParser.single("image"), async (request, response, next) => {
+    let savedImage = "";
+    try {
+      const { name, title, contact = "" } = request.body ?? {};
+      if (!validDepartmentMember(name, title, contact)) {
+        return response.status(400).json({ error: "Completează corect numele, funcția și datele de contact." });
+      }
+      const department = db.prepare("SELECT id FROM departments WHERE id = ?").get(request.params.id);
+      if (!department) return response.status(404).json({ error: "Departamentul nu a fost găsit." });
+      if (request.file) savedImage = await saveImage(request.file);
+      const id = randomUUID();
+      const position = db.prepare("SELECT COALESCE(MAX(position), -1) + 1 AS position FROM department_members WHERE department_id = ?").get(department.id).position;
+      db.prepare(`
+        INSERT INTO department_members (id, department_id, name, title, contact, image, position)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(id, department.id, name.trim(), title.trim(), contact.trim(), savedImage, position);
+      const member = db.prepare("SELECT * FROM department_members WHERE id = ?").get(id);
+      response.status(201).json({
+        id: member.id,
+        name: member.name,
+        title: member.title,
+        contact: member.contact,
+        image: member.image,
+      });
+    } catch (error) {
+      if (savedImage) await removeUploadedImage(savedImage);
+      next(error);
+    }
+  });
+
+  app.put("/api/admin/department-members/:id", uploadParser.single("image"), async (request, response, next) => {
+    let savedImage = "";
+    try {
+      const { name, title, contact = "" } = request.body ?? {};
+      if (!validDepartmentMember(name, title, contact)) {
+        return response.status(400).json({ error: "Completează corect numele, funcția și datele de contact." });
+      }
+      const existing = db.prepare("SELECT * FROM department_members WHERE id = ?").get(request.params.id);
+      if (!existing) return response.status(404).json({ error: "Chenarele persoanei nu au fost găsite." });
+      if (request.file) savedImage = await saveImage(request.file);
+      const image = savedImage || existing.image;
+      db.prepare("UPDATE department_members SET name = ?, title = ?, contact = ?, image = ? WHERE id = ?")
+        .run(name.trim(), title.trim(), contact.trim(), image, existing.id);
+      if (savedImage) await cleanupUploadedImage(existing.image);
+      const member = db.prepare("SELECT * FROM department_members WHERE id = ?").get(existing.id);
+      response.json({
+        id: member.id,
+        name: member.name,
+        title: member.title,
+        contact: member.contact,
+        image: member.image,
+      });
+    } catch (error) {
+      if (savedImage) await removeUploadedImage(savedImage);
+      next(error);
+    }
+  });
+
+  app.delete("/api/admin/department-members/:id", async (request, response, next) => {
+    try {
+      const existing = db.prepare("SELECT * FROM department_members WHERE id = ?").get(request.params.id);
+      if (!existing) return response.status(404).json({ error: "Chenarele persoanei nu au fost găsite." });
+      db.prepare("DELETE FROM department_members WHERE id = ?").run(existing.id);
+      await cleanupUploadedImage(existing.image);
+      response.json({ deleted: true });
+    } catch (error) {
       next(error);
     }
   });

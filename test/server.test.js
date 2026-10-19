@@ -120,6 +120,11 @@ test("serves the site, synchronizes Google Sheets staff, and persists authentica
   );
   assert.equal(staff.find((member) => member.role === "DIRECTOR GENERAL").name, "Darrin Rodriguez");
 
+  const { response: initialDepartmentsResponse, body: initialDepartments } = await json("/api/departments");
+  assert.equal(initialDepartmentsResponse.status, 200);
+  assert.equal(initialDepartments.length, 6);
+  assert.equal(initialDepartments[0].members[0].name, "Freya NDC");
+
   sheetCsv = sheetCsv
     .replace("Darrin Rodriguez", "Darrin Actualizat")
     .replace(
@@ -137,6 +142,12 @@ test("serves the site, synchronizes Google Sheets staff, and persists authentica
   const { response: signedOutResponse, body: signedOutSession } = await json("/api/admin/session");
   assert.equal(signedOutResponse.status, 200);
   assert.equal(signedOutSession.authenticated, false);
+  const unauthorizedDepartment = await fetch(`${baseUrl}/api/admin/departments`, {
+    method: "POST",
+    headers: { Origin: baseUrl, "Content-Type": "application/json" },
+    body: JSON.stringify({ title: "Neautorizat", subtitle: "", color: "#123456" }),
+  });
+  assert.equal(unauthorizedDepartment.status, 401);
 
   const failedLogin = await json("/api/admin/login", {
     method: "POST",
@@ -157,6 +168,70 @@ test("serves the site, synchronizes Google Sheets staff, and persists authentica
   assert.equal(sessionResponse.status, 200);
   const signedInSession = await json("/api/admin/session", { headers: { Cookie: adminCookie } });
   assert.equal(signedInSession.body.authenticated, true);
+
+  const createdDepartment = await json("/api/admin/departments", {
+    method: "POST",
+    headers: adminHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ title: "Departament de test", subtitle: "Echipă de test", color: "#123456" }),
+  });
+  assert.equal(createdDepartment.response.status, 201);
+  const departmentId = createdDepartment.body.id;
+
+  const createdDepartmentMemberForm = new FormData();
+  createdDepartmentMemberForm.set("name", "Membru de test");
+  createdDepartmentMemberForm.set("title", "Coordonator");
+  createdDepartmentMemberForm.set("contact", "@test · 123");
+  createdDepartmentMemberForm.set("image", new Blob([
+    Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/pXcAAAAASUVORK5CYII=", "base64"),
+  ], { type: "image/png" }), "membru.png");
+  const createdDepartmentMember = await json(`/api/admin/departments/${departmentId}/members`, {
+    method: "POST",
+    headers: adminHeaders(),
+    body: createdDepartmentMemberForm,
+  });
+  assert.equal(createdDepartmentMember.response.status, 201);
+  const departmentMemberId = createdDepartmentMember.body.id;
+
+  const updatedDepartmentMemberForm = new FormData();
+  updatedDepartmentMemberForm.set("name", "Membru actualizat");
+  updatedDepartmentMemberForm.set("title", "Manager");
+  updatedDepartmentMemberForm.set("contact", "@manager · 456");
+  const updatedDepartmentMember = await json(`/api/admin/department-members/${departmentMemberId}`, {
+    method: "PUT",
+    headers: adminHeaders(),
+    body: updatedDepartmentMemberForm,
+  });
+  assert.equal(updatedDepartmentMember.response.status, 200);
+  assert.equal(updatedDepartmentMember.body.name, "Membru actualizat");
+  assert.equal(updatedDepartmentMember.body.image, createdDepartmentMember.body.image);
+
+  const updatedDepartmentForm = new FormData();
+  updatedDepartmentForm.set("title", "Departament actualizat");
+  updatedDepartmentForm.set("subtitle", "Descriere actualizată");
+  updatedDepartmentForm.set("color", "#654321");
+  updatedDepartmentForm.set("emblem", new Blob([
+    Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/pXcAAAAASUVORK5CYII=", "base64"),
+  ], { type: "image/png" }), "sigla.png");
+  const updatedDepartment = await json(`/api/admin/departments/${departmentId}`, {
+    method: "PUT",
+    headers: adminHeaders(),
+    body: updatedDepartmentForm,
+  });
+  assert.equal(updatedDepartment.response.status, 200);
+  assert.equal(updatedDepartment.body.title, "Departament actualizat");
+  assert.equal(updatedDepartment.body.members[0].contact, "@manager · 456");
+  assert.match(updatedDepartment.body.emblem, /^\/uploads\/[a-f0-9-]+\.png$/);
+
+  const deletedDepartmentMember = await fetch(`${baseUrl}/api/admin/department-members/${departmentMemberId}`, {
+    method: "DELETE",
+    headers: adminHeaders(),
+  });
+  assert.equal(deletedDepartmentMember.status, 200);
+  const deletedDepartment = await fetch(`${baseUrl}/api/admin/departments/${departmentId}`, {
+    method: "DELETE",
+    headers: adminHeaders(),
+  });
+  assert.equal(deletedDepartment.status, 200);
 
   const unauthorizedUpdate = await fetch(`${baseUrl}/api/admin/staff/director-general`, {
     method: "PUT",

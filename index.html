@@ -108,33 +108,16 @@
       <p class="staff-sync-status" id="staff-sync-status" role="status" hidden></p>
     </section>
 
-    <section class="services section-wrap" id="subdepartamente">
+    <section class="departments-page section-wrap" id="subdepartamente">
       <div class="section-heading">
         <div>
-          <div class="section-kicker"><span>04</span> Cum te putem ajuta</div>
-          <h2>Mai aproape,<br><span>pas cu pas.</span></h2>
+          <div class="section-kicker"><span>04</span> Structura echipei</div>
+          <h2>Sub-departamentele<br><span>spitalului.</span></h2>
         </div>
-        <p class="heading-aside">Găsește rapid informațiile<br>și serviciile potrivite pentru tine.</p>
+        <p class="heading-aside">Echipele și responsabilii<br>fiecărui departament.</p>
       </div>
-      <div class="service-grid">
-        <a class="service-card" id="audienta" href="/cereri-de-audienta">
-          <span class="service-icon" aria-hidden="true">↗</span><span class="service-label">01 / Programări</span><h3>Cereri de audiență</h3><p>Află cum poți solicita o întâlnire cu echipa noastră.</p><span class="service-arrow" aria-hidden="true">→</span>
-        </a>
-        <a class="service-card" id="informatii" href="/informatii">
-          <span class="service-icon" aria-hidden="true">✳</span><span class="service-label">02 / Resurse</span><h3>Informații</h3><p>Scrie-ne dacă ai nevoie de ajutor sau informații suplimentare.</p><span class="service-arrow" aria-hidden="true">→</span>
-        </a>
-        <a class="service-card" id="criterii" href="/criterii-admitere">
-          <span class="service-icon" aria-hidden="true">＋</span><span class="service-label">03 / Cariere</span><h3>Criterii admitere</h3><p>Solicită detalii despre pașii și criteriile de admitere.</p><span class="service-arrow" aria-hidden="true">→</span>
-        </a>
-        <a class="service-card" id="reintegrare" href="/reintegrare">
-          <span class="service-icon" aria-hidden="true">↻</span><span class="service-label">04 / Revenire</span><h3>Reintegrare</h3><p>Discută cu noi despre pașii necesari pentru reintegrare.</p><span class="service-arrow" aria-hidden="true">→</span>
-        </a>
-        <a class="service-card" id="transfer" href="/transfer">
-          <span class="service-icon" aria-hidden="true">⇄</span><span class="service-label">05 / Mobilitate</span><h3>Transfer</h3><p>Ia legătura cu echipa noastră pentru informații despre transfer.</p><span class="service-arrow" aria-hidden="true">→</span>
-        </a>
-        <a class="service-card" href="/sub-departamente">
-          <span class="service-icon" aria-hidden="true">⌘</span><span class="service-label">06 / Echipa</span><h3>Sub departamente</h3><p>Descoperă structura echipei și domeniile noastre de activitate.</p><span class="service-arrow" aria-hidden="true">→</span>
-        </a>
+      <div class="department-list" id="department-list" aria-live="polite">
+        <p class="loading-state">Sub-departamentele se încarcă...</p>
       </div>
     </section>
 
@@ -183,6 +166,7 @@
       <button class="admin-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="announcements-panel" id="announcements-tab" data-panel="announcements-panel">Anunțuri</button>
       <button class="admin-tab" type="button" role="tab" aria-selected="false" aria-controls="staff-panel" id="staff-tab" data-panel="staff-panel">Organigramă</button>
       <button class="admin-tab" type="button" role="tab" aria-selected="false" aria-controls="hero-panel" id="hero-tab" data-panel="hero-panel">Imagine principală</button>
+      <button class="admin-tab" type="button" role="tab" aria-selected="false" aria-controls="departments-panel" id="departments-tab" data-panel="departments-panel">Subdepartamente</button>
     </div>
     <section class="admin-section" id="announcements-panel" role="tabpanel" aria-labelledby="announcements-tab">
       <div class="admin-section-heading"><div><span class="dialog-kicker">Publicare și editare</span><h3>Anunțuri publice</h3></div><p>Sunt afișate întotdeauna cele mai recente trei anunțuri.</p></div>
@@ -214,6 +198,21 @@
         <p class="form-message" id="hero-image-message" aria-live="polite"></p>
         <div class="editor-actions"><button class="button button-primary" type="submit" id="hero-image-submit">Salvează imaginea <span aria-hidden="true">↗</span></button></div>
       </form>
+    </section>
+    <section class="admin-section" id="departments-panel" role="tabpanel" aria-labelledby="departments-tab" hidden>
+      <div class="admin-section-heading"><div><span class="dialog-kicker">Structura echipei</span><h3>Editează subdepartamentele</h3></div><p>Modifică denumirile, culorile, siglele și fiecare chenar de persoană.</p></div>
+      <form id="new-department-form" class="editor-form department-create-form">
+        <h4>Adaugă un departament</h4>
+        <label for="new-department-title">Denumire departament</label>
+        <input id="new-department-title" name="title" type="text" maxlength="100" required>
+        <label for="new-department-subtitle">Descriere scurtă</label>
+        <input id="new-department-subtitle" name="subtitle" type="text" maxlength="120">
+        <label for="new-department-color">Culoare chenare</label>
+        <input id="new-department-color" name="color" type="color" value="#087afa" required>
+        <p class="form-message" id="new-department-message" aria-live="polite"></p>
+        <button class="button button-primary" type="submit">Adaugă departamentul <span aria-hidden="true">↗</span></button>
+      </form>
+      <div class="admin-department-list" id="admin-department-list"></div>
     </section>
   </dialog>
 </body>

@@ -9,6 +9,10 @@ const announcementForm = document.querySelector("#announcement-form");
 const announcementMessage = document.querySelector("#announcement-message");
 const adminAnnouncementList = document.querySelector("#admin-announcement-list");
 const adminStaffList = document.querySelector("#admin-staff-list");
+const departmentList = document.querySelector("#department-list");
+const adminDepartmentList = document.querySelector("#admin-department-list");
+const newDepartmentForm = document.querySelector("#new-department-form");
+const newDepartmentMessage = document.querySelector("#new-department-message");
 const staffSyncStatus = document.querySelector("#staff-sync-status");
 const heroImage = document.querySelector("#hero-image");
 const heroImageForm = document.querySelector("#hero-image-form");
@@ -18,6 +22,7 @@ const serviceDetail = document.querySelector("#service-detail");
 let isAuthenticated = false;
 let announcements = [];
 let staff = [];
+let departments = [];
 let heroPreviewUrl = "";
 
 const pageRoutes = {
@@ -32,6 +37,7 @@ const pageRoutes = {
     description: "Solicită o întâlnire cu echipa de conducere a Spitalului Medical Eclipse Tower.",
     details: ["Descrie pe scurt motivul întâlnirii.", "Include numele și datele tale de contact.", "Echipa de Relații Publice îți va răspunde pentru stabilirea detaliilor."],
     subject: "Cerere de audiență",
+    formUrl: "https://docs.google.com/forms/d/e/1FAIpQLScq3rOOmd0S1iUsnTKAgREkLymWRexNCPSytURbYfHmT_IPHQ/viewform",
   },
   "/informatii": {
     title: "Informații",
@@ -65,6 +71,9 @@ const pageRoutes = {
 
 function renderServiceDetail(route) {
   serviceDetail.replaceChildren();
+  serviceDetail.className = route.formUrl
+    ? "service-detail section-wrap service-detail-audience"
+    : "service-detail section-wrap";
   const kicker = document.createElement("p");
   kicker.className = "section-kicker";
   const kickerNumber = document.createElement("span");
@@ -76,12 +85,16 @@ function renderServiceDetail(route) {
   const description = document.createElement("p");
   description.className = "service-detail-description";
   description.textContent = route.description;
+  const intro = document.createElement("div");
+  intro.className = "service-detail-intro";
+  intro.append(kicker, heading, description);
+
   const list = document.createElement("ol");
-  list.className = "service-detail-list";
+  list.className = route.formUrl ? "service-detail-list service-detail-steps" : "service-detail-list";
   route.details.forEach((detail, index) => {
     const item = document.createElement("li");
     const number = document.createElement("span");
-    number.className = "service-detail-number";
+    number.className = route.formUrl ? "service-detail-number service-step-number" : "service-detail-number";
     number.textContent = String(index + 1).padStart(2, "0");
     const text = document.createElement("span");
     text.textContent = detail;
@@ -92,8 +105,18 @@ function renderServiceDetail(route) {
   actions.className = "service-detail-actions";
   const contact = document.createElement("a");
   contact.className = "button button-primary";
-  contact.href = `mailto:relatiipublice@medicipentruoameni.ro?subject=${encodeURIComponent(route.subject)}`;
-  contact.append(document.createTextNode("Scrie echipei de Relații Publice "));
+  contact.href = route.formUrl ?? `mailto:relatiipublice@medicipentruoameni.ro?subject=${encodeURIComponent(route.subject)}`;
+  if (route.formUrl) {
+    const icon = document.createElement("span");
+    icon.className = "service-request-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = "＋";
+    contact.target = "_blank";
+    contact.rel = "noopener noreferrer";
+    contact.append(icon, document.createTextNode("Cerere Audiență "));
+  } else {
+    contact.append(document.createTextNode("Scrie echipei de Relații Publice "));
+  }
   const arrow = document.createElement("span");
   arrow.setAttribute("aria-hidden", "true");
   arrow.textContent = "↗";
@@ -102,8 +125,24 @@ function renderServiceDetail(route) {
   services.className = "inline-link";
   services.href = "/sub-departamente";
   services.textContent = "Vezi toate sub departamentele";
-  actions.append(contact, services);
-  serviceDetail.append(kicker, heading, description, list, actions);
+  if (route.formUrl) {
+    actions.classList.add("service-request-card");
+    const requestCopy = document.createElement("div");
+    requestCopy.className = "service-request-copy";
+    const requestKicker = document.createElement("span");
+    requestKicker.className = "dialog-kicker";
+    requestKicker.textContent = "Solicitare online";
+    const requestHeading = document.createElement("h2");
+    requestHeading.textContent = "Ai nevoie de o audiență?";
+    const requestDescription = document.createElement("p");
+    requestDescription.textContent = "Completează formularul și echipa noastră te va contacta pentru stabilirea întâlnirii.";
+    requestCopy.append(requestKicker, requestHeading, requestDescription);
+    actions.append(requestCopy, contact, services);
+    serviceDetail.append(intro, list, actions);
+  } else {
+    actions.append(contact, services);
+    serviceDetail.append(intro, list, actions);
+  }
 }
 
 function applyPageRoute() {
@@ -318,6 +357,266 @@ function renderStaff() {
   if (isAuthenticated) renderAdminStaff();
 }
 
+function makeDepartmentMemberCard(member, department) {
+  const card = document.createElement("article");
+  card.className = `department-member${member.name.toLocaleUpperCase("ro-RO") === "VACANT" ? " is-vacant" : ""}`;
+  card.style.setProperty("--department-color", department.color);
+  const portrait = document.createElement("div");
+  portrait.className = "department-member-portrait";
+  if (member.image) {
+    const image = document.createElement("img");
+    image.src = member.image;
+    image.alt = "";
+    image.loading = "lazy";
+    portrait.append(image);
+  } else {
+    portrait.textContent = member.name.toLocaleUpperCase("ro-RO") === "VACANT"
+      ? "—"
+      : member.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toLocaleUpperCase("ro-RO");
+    portrait.setAttribute("aria-hidden", "true");
+  }
+
+  const details = document.createElement("div");
+  details.className = "department-member-details";
+  const name = document.createElement("h4");
+  name.textContent = member.name;
+  const title = document.createElement("p");
+  title.textContent = member.title;
+  const contact = document.createElement("p");
+  contact.className = "department-member-contact";
+  contact.textContent = member.contact ? `Contact: ${member.contact}` : "Contact: —";
+  details.append(name, title, contact);
+  card.append(portrait, details);
+  return card;
+}
+
+function renderDepartments() {
+  departmentList.replaceChildren();
+  if (!departments.length) {
+    const empty = document.createElement("p");
+    empty.className = "loading-state";
+    empty.textContent = "Nu sunt încă departamente adăugate.";
+    departmentList.append(empty);
+    return;
+  }
+
+  departments.forEach((department, index) => {
+    const group = document.createElement("section");
+    group.className = "department-group";
+    group.style.setProperty("--department-color", department.color);
+    const heading = document.createElement("div");
+    heading.className = "department-heading";
+    const number = document.createElement("span");
+    number.className = "department-number";
+    number.textContent = String(index + 1).padStart(2, "0");
+    const titleCopy = document.createElement("div");
+    titleCopy.className = "department-title-copy";
+    const title = document.createElement("h3");
+    title.textContent = department.title;
+    titleCopy.append(title);
+    if (department.subtitle) {
+      const subtitle = document.createElement("p");
+      subtitle.textContent = department.subtitle;
+      titleCopy.append(subtitle);
+    }
+    heading.append(number, titleCopy);
+    group.append(heading);
+
+    for (let index = 0; index < department.members.length; index += 2) {
+      const pair = department.members.slice(index, index + 2);
+      const row = document.createElement("div");
+      row.className = `department-member-row${pair.length === 1 ? " is-solo" : ""}`;
+      row.append(makeDepartmentMemberCard(pair[0], department));
+      if (pair.length === 2) {
+        const emblem = document.createElement("div");
+        emblem.className = "department-emblem";
+        if (department.emblem) {
+          const image = document.createElement("img");
+          image.src = department.emblem;
+          image.alt = `Sigla ${department.title}`;
+          image.loading = "lazy";
+          emblem.append(image);
+        } else {
+          emblem.textContent = "✚";
+          emblem.setAttribute("aria-hidden", "true");
+        }
+        row.append(emblem, makeDepartmentMemberCard(pair[1], department));
+      }
+      group.append(row);
+    }
+
+    if (isAuthenticated) {
+      const edit = document.createElement("button");
+      edit.type = "button";
+      edit.className = "button button-secondary department-edit-link";
+      edit.textContent = "Editează acest departament";
+      edit.addEventListener("click", () => {
+        adminDialog.showModal();
+        document.querySelector("#departments-tab").click();
+        adminDepartmentList.querySelector(`[data-department-id="${CSS.escape(department.id)}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      group.append(edit);
+    }
+    departmentList.append(group);
+  });
+  if (isAuthenticated) renderAdminDepartments();
+}
+
+function makeAdminField(labelText, name, value, { type = "text", maxLength, required = false } = {}) {
+  const label = document.createElement("label");
+  label.textContent = labelText;
+  const input = document.createElement("input");
+  input.name = name;
+  input.type = type;
+  if (maxLength) input.maxLength = maxLength;
+  if (required) input.required = true;
+  input.value = value;
+  label.append(input);
+  return label;
+}
+
+function renderAdminDepartments() {
+  adminDepartmentList.replaceChildren();
+  departments.forEach((department) => {
+    const editor = document.createElement("section");
+    editor.className = "admin-department-editor";
+    editor.dataset.departmentId = department.id;
+    const heading = document.createElement("h4");
+    heading.textContent = department.title;
+    editor.append(heading);
+
+    const departmentForm = document.createElement("form");
+    departmentForm.className = "department-settings-form";
+    departmentForm.dataset.departmentId = department.id;
+    departmentForm.append(
+      makeAdminField("Denumire", "title", department.title, { maxLength: 100, required: true }),
+      makeAdminField("Descriere", "subtitle", department.subtitle, { maxLength: 120 }),
+      makeAdminField("Culoare", "color", department.color, { type: "color", required: true }),
+    );
+    const emblemLabel = document.createElement("label");
+    emblemLabel.className = "photo-input-label";
+    emblemLabel.textContent = department.emblem ? "Schimbă sigla (opțional)" : "Adaugă siglă (opțional)";
+    const emblemInput = document.createElement("input");
+    emblemInput.name = "emblem";
+    emblemInput.type = "file";
+    emblemInput.accept = "image/jpeg,image/png,image/webp";
+    emblemLabel.append(emblemInput);
+    const settingsMessage = document.createElement("span");
+    settingsMessage.className = "form-message";
+    settingsMessage.setAttribute("aria-live", "polite");
+    const settingsActions = document.createElement("div");
+    settingsActions.className = "editor-actions";
+    const saveDepartment = document.createElement("button");
+    saveDepartment.type = "submit";
+    saveDepartment.className = "button button-secondary";
+    saveDepartment.textContent = "Salvează departamentul";
+    const deleteDepartment = document.createElement("button");
+    deleteDepartment.type = "button";
+    deleteDepartment.className = "button button-logout";
+    deleteDepartment.textContent = "Șterge departamentul";
+    deleteDepartment.addEventListener("click", () => deleteDepartmentById(department.id));
+    settingsActions.append(saveDepartment, deleteDepartment);
+    departmentForm.append(emblemLabel, settingsMessage, settingsActions);
+    editor.append(departmentForm);
+
+    const membersHeading = document.createElement("h5");
+    membersHeading.textContent = "Chenare persoane";
+    editor.append(membersHeading);
+    department.members.forEach((member) => {
+      const memberForm = document.createElement("form");
+      memberForm.className = "department-member-editor";
+      memberForm.dataset.memberId = member.id;
+      memberForm.dataset.departmentId = department.id;
+      memberForm.append(
+        makeAdminField("Nume", "name", member.name, { maxLength: 80, required: true }),
+        makeAdminField("Funcție", "title", member.title, { maxLength: 120, required: true }),
+        makeAdminField("Contact / telefon", "contact", member.contact, { maxLength: 200 }),
+      );
+      const photoLabel = document.createElement("label");
+      photoLabel.className = "photo-input-label";
+      photoLabel.textContent = member.image ? "Schimbă fotografia (opțional)" : "Adaugă fotografie (opțional)";
+      const photoInput = document.createElement("input");
+      photoInput.name = "image";
+      photoInput.type = "file";
+      photoInput.accept = "image/jpeg,image/png,image/webp";
+      photoLabel.append(photoInput);
+      const message = document.createElement("span");
+      message.className = "form-message";
+      message.setAttribute("aria-live", "polite");
+      const actions = document.createElement("div");
+      actions.className = "editor-actions";
+      const save = document.createElement("button");
+      save.type = "submit";
+      save.className = "button button-secondary";
+      save.textContent = "Salvează chenarul";
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "button button-logout";
+      remove.textContent = "Șterge";
+      remove.addEventListener("click", () => deleteDepartmentMember(member.id));
+      actions.append(save, remove);
+      memberForm.append(photoLabel, message, actions);
+      editor.append(memberForm);
+    });
+
+    const addMemberForm = document.createElement("form");
+    addMemberForm.className = "department-member-editor department-member-create";
+    addMemberForm.dataset.departmentId = department.id;
+    const addHeading = document.createElement("h5");
+    addHeading.textContent = "Adaugă un chenar";
+    addMemberForm.append(
+      addHeading,
+      makeAdminField("Nume", "name", "", { maxLength: 80, required: true }),
+      makeAdminField("Funcție", "title", "", { maxLength: 120, required: true }),
+      makeAdminField("Contact / telefon", "contact", "", { maxLength: 200 }),
+    );
+    const addPhotoLabel = document.createElement("label");
+    addPhotoLabel.className = "photo-input-label";
+    addPhotoLabel.textContent = "Fotografie (opțional)";
+    const addPhoto = document.createElement("input");
+    addPhoto.name = "image";
+    addPhoto.type = "file";
+    addPhoto.accept = "image/jpeg,image/png,image/webp";
+    addPhotoLabel.append(addPhoto);
+    const addMessage = document.createElement("span");
+    addMessage.className = "form-message";
+    addMessage.setAttribute("aria-live", "polite");
+    const addButton = document.createElement("button");
+    addButton.type = "submit";
+    addButton.className = "button button-secondary";
+    addButton.textContent = "Adaugă chenar";
+    addMemberForm.append(addPhotoLabel, addMessage, addButton);
+    editor.append(addMemberForm);
+    adminDepartmentList.append(editor);
+  });
+}
+
+async function deleteDepartmentById(id) {
+  const department = departments.find((item) => item.id === id);
+  if (!department || !window.confirm(`Ștergi departamentul „${department.title}” și toate chenarele lui?`)) return;
+  try {
+    await api(`/api/admin/departments/${encodeURIComponent(id)}`, { method: "DELETE" });
+    await loadDepartments();
+  } catch (error) {
+    window.alert(error.message);
+  }
+}
+
+async function deleteDepartmentMember(id) {
+  if (!window.confirm("Ștergi acest chenar?")) return;
+  try {
+    await api(`/api/admin/department-members/${encodeURIComponent(id)}`, { method: "DELETE" });
+    await loadDepartments();
+  } catch (error) {
+    window.alert(error.message);
+  }
+}
+
+async function loadDepartments() {
+  departments = await api("/api/departments");
+  renderDepartments();
+}
+
 function renderAdminAnnouncements() {
   adminAnnouncementList.replaceChildren();
   announcements.forEach((announcement) => {
@@ -415,10 +714,11 @@ function resetAnnouncementForm() {
 }
 
 async function loadPublicContent() {
-  const [announcementData, staffData, siteSettings] = await Promise.all([
+  const [announcementData, staffData, siteSettings, departmentData] = await Promise.all([
     api("/api/announcements"),
     api("/api/staff"),
     api("/api/site-settings"),
+    api("/api/departments"),
   ]);
   announcements = announcementData;
   staff = staffData.members;
@@ -428,8 +728,10 @@ async function loadPublicContent() {
     : "";
   heroImage.src = siteSettings.heroImage;
   heroImagePreview.src = siteSettings.heroImage;
+  departments = departmentData;
   renderAnnouncements();
   renderStaff();
+  renderDepartments();
 }
 
 async function refreshStaffFromSheet() {
@@ -457,6 +759,7 @@ async function refreshSession() {
       loginButton.textContent = "Administrare";
       renderAnnouncements();
       renderStaff();
+      renderDepartments();
     } else {
       loginButton.textContent = "Conectare ↗";
     }
@@ -470,6 +773,7 @@ loginButton.addEventListener("click", () => {
   if (isAuthenticated) {
     renderAdminAnnouncements();
     renderAdminStaff();
+    renderAdminDepartments();
     adminDialog.showModal();
     return;
   }
@@ -508,6 +812,7 @@ loginForm.addEventListener("submit", async (event) => {
     await loadPublicContent();
     renderAdminAnnouncements();
     renderAdminStaff();
+    renderAdminDepartments();
     adminDialog.showModal();
   } catch (error) {
     setMessage(loginMessage, error.message, true);
@@ -526,7 +831,65 @@ document.querySelectorAll(".admin-tab").forEach((tab) => {
     document.querySelectorAll(".admin-section").forEach((panel) => {
       panel.hidden = panel.id !== tab.dataset.panel;
     });
-  });
+      if (tab.dataset.panel === "departments-panel") renderAdminDepartments();
+    });
+});
+
+newDepartmentForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const submit = newDepartmentForm.querySelector("button[type=submit]");
+    submit.disabled = true;
+    setMessage(newDepartmentMessage, "Se adaugă departamentul...");
+    try {
+      await api("/api/admin/departments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(new FormData(newDepartmentForm))),
+      });
+      newDepartmentForm.reset();
+      newDepartmentForm.elements.color.value = "#087afa";
+      setMessage(newDepartmentMessage, "Departamentul a fost adăugat.");
+      await loadDepartments();
+    } catch (error) {
+      setMessage(newDepartmentMessage, error.message, true);
+    } finally {
+      submit.disabled = false;
+    }
+});
+
+adminDepartmentList.addEventListener("submit", async (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    event.preventDefault();
+    const submit = form.querySelector("button[type=submit]");
+    const message = form.querySelector(".form-message");
+    submit.disabled = true;
+    setMessage(message, "Se salvează modificările...");
+    try {
+      if (form.classList.contains("department-settings-form")) {
+        await api(`/api/admin/departments/${encodeURIComponent(form.dataset.departmentId)}`, {
+          method: "PUT",
+          body: new FormData(form),
+        });
+      } else if (form.classList.contains("department-member-create")) {
+        await api(`/api/admin/departments/${encodeURIComponent(form.dataset.departmentId)}/members`, {
+          method: "POST",
+          body: new FormData(form),
+        });
+      } else if (form.classList.contains("department-member-editor")) {
+        await api(`/api/admin/department-members/${encodeURIComponent(form.dataset.memberId)}`, {
+          method: "PUT",
+          body: new FormData(form),
+        });
+      } else {
+        return;
+      }
+      await loadDepartments();
+    } catch (error) {
+      setMessage(message, error.message, true);
+    } finally {
+      submit.disabled = false;
+    }
 });
 
 announcementForm.addEventListener("submit", async (event) => {
@@ -660,5 +1023,9 @@ loadPublicContent().catch((error) => {
   staffError.textContent = `Organigrama nu s-a putut încărca: ${error.message}`;
   announcementList.append(announcementError);
   staffList.append(staffError);
+  const departmentError = document.createElement("p");
+  departmentError.className = "loading-state is-error";
+  departmentError.textContent = `Sub-departamentele nu s-au putut încărca: ${error.message}`;
+  departmentList.replaceChildren(departmentError);
 });
 refreshSession();
