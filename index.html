@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080f1c">
+  <meta name="description" content="Spitalul Medical Eclipse Tower — află noutățile, serviciile și informațiile utile despre echipa noastră medicală.">
+  <title>Spitalul Medical Eclipse Tower | Împreună pentru sănătate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#continut">Sari la conținut</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="/" aria-label="Spitalul Medical Eclipse Tower - pagina principală">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="M24 4v40M4 24h40" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+            <path d="M24 4v40M4 24h40" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="brand-copy"><strong>SPITALUL MEDICAL</strong><span>ECLIPSE TOWER</span></span>
+      </a>
+
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-navigation">
+        <span class="menu-toggle-label">Meniu</span>
+        <span class="menu-icon" aria-hidden="true"><span></span><span></span></span>
+      </button>
+
+      <nav class="main-navigation" id="main-navigation" aria-label="Navigare principală">
+        <a href="/despre-noi">Despre Noi</a>
+        <a href="/anunturi">Anunțuri</a>
+        <a href="/conducere">Conducere</a>
+        <a href="/sub-departamente">Sub Departamente</a>
+        <a href="/cereri-de-audienta">Cereri de audiență</a>
+        <a href="/informatii">Informații</a>
+        <a href="/criterii-admitere">Criterii Admitere</a>
+        <a href="/reintegrare">Reintegrare</a>
+        <a href="/transfer">Transfer</a>
+      </nav>
+      <button class="button button-login" id="admin-login-button" type="button">Conectare <span aria-hidden="true">↗</span></button>
+    </div>
+  </header>
+
+  <main id="continut">
+    <section class="hero" id="acasa">
+      <div class="hero-content">
+        <p class="eyebrow"><span></span> Grijă. Profesionalism. Încredere.</p>
+        <h1>O echipă unită,<br><span>pentru sănătatea</span> tuturor.</h1>
+        <p class="hero-description">Suntem aici pentru oameni. Descoperă echipa noastră, află ultimele noutăți și găsește informațiile de care ai nevoie.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="/despre-noi">Descoperă echipa <span aria-hidden="true">↗</span></a>
+          <a class="text-link" href="/anunturi">Vezi ultimele anunțuri <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="hero-note"><span class="note-icon" aria-hidden="true">✳</span><span>Medicina înseamnă, înainte de toate,<br><strong>grijă pentru fiecare om.</strong></span></div>
+      </div>
+      <div class="hero-visual" aria-label="Medic zâmbitor într-un cabinet medical" role="img">
+        <div class="hero-image"></div>
+        <div class="hero-badge"><span class="badge-plus" aria-hidden="true">+</span><span><strong>Oameni înainte de toate</strong><small>Îngrijire cu empatie</small></span></div>
+        <div class="hero-shape" aria-hidden="true"></div>
+      </div>
+      <a class="scroll-cue" href="/despre-noi"><span></span> Descoperă spitalul</a>
+    </section>
+
+    <section class="intro section-wrap" id="despre-noi">
+      <div class="section-kicker"><span>01</span> Despre noi</div>
+      <div class="intro-content">
+        <h2>Medici dedicați.<br><span>Oameni aproape.</span></h2>
+        <div>
+          <p>Credem într-o medicină făcută cu responsabilitate, respect și atenție față de fiecare pacient. Echipa noastră reunește profesioniști care lucrează împreună pentru o comunitate mai sănătoasă.</p>
+          <a class="inline-link" href="/conducere">Cunoaște echipa de conducere <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <div class="values-row">
+        <div class="value-item"><span class="value-number">01</span><div><strong>Grijă autentică</strong><p>Fiecare om merită atenție și respect.</p></div></div>
+        <div class="value-item"><span class="value-number">02</span><div><strong>Profesionalism</strong><p>Lucrăm cu seriozitate, zi de zi.</p></div></div>
+        <div class="value-item"><span class="value-number">03</span><div><strong>Împreună</strong><p>Colaborăm pentru rezultate mai bune.</p></div></div>
+      </div>
+    </section>
+
+    <section class="announcements section-wrap" id="anunturi">
+      <div class="section-heading">
+        <div>
+          <div class="section-kicker"><span>02</span> Noutăți și informări</div>
+          <h2>Anunțuri <span>recente.</span></h2>
+        </div>
+        <p class="heading-aside">Rămâi la curent cu cele mai noi<br>informații din comunitatea noastră.</p>
+      </div>
+      <div class="announcement-grid" id="announcement-list" aria-live="polite">
+        <p class="loading-state">Anunțurile se încarcă...</p>
+      </div>
+      <p class="announcement-note"><span aria-hidden="true">✳</span> Aici vor apărea întotdeauna cele mai recente trei anunțuri.</p>
+    </section>
+
+    <section class="leadership section-wrap" id="conducere">
+      <div class="leadership-intro">
+        <div class="section-kicker section-kicker-light"><span>03</span> Camera de conducere</div>
+        <h2>O conducere<br>care lucrează <span>împreună.</span></h2>
+        <p>Responsabilități clare, o echipă unită și un scop comun: servicii medicale mai bune pentru toți.</p>
+        <a class="button button-light" href="/sub-departamente">Descoperă structura <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="org-chart" id="staff-list" aria-label="Organigrama echipei medicale" aria-live="polite">
+        <p class="loading-state">Organigrama se încarcă...</p>
+      </div>
+    </section>
+
+    <section class="services section-wrap" id="subdepartamente">
+      <div class="section-heading">
+        <div>
+          <div class="section-kicker"><span>04</span> Cum te putem ajuta</div>
+          <h2>Mai aproape,<br><span>pas cu pas.</span></h2>
+        </div>
+        <p class="heading-aside">Găsește rapid informațiile<br>și serviciile potrivite pentru tine.</p>
+      </div>
+      <div class="service-grid">
+        <a class="service-card" id="audienta" href="/cereri-de-audienta">
+          <span class="service-icon" aria-hidden="true">↗</span><span class="service-label">01 / Programări</span><h3>Cereri de audiență</h3><p>Află cum poți solicita o întâlnire cu echipa noastră.</p><span class="service-arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="service-card" id="informatii" href="/informatii">
+          <span class="service-icon" aria-hidden="true">✳</span><span class="service-label">02 / Resurse</span><h3>Informații</h3><p>Scrie-ne dacă ai nevoie de ajutor sau informații suplimentare.</p><span class="service-arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="service-card" id="criterii" href="/criterii-admitere">
+          <span class="service-icon" aria-hidden="true">＋</span><span class="service-label">03 / Cariere</span><h3>Criterii admitere</h3><p>Solicită detalii despre pașii și criteriile de admitere.</p><span class="service-arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="service-card" id="reintegrare" href="/reintegrare">
+          <span class="service-icon" aria-hidden="true">↻</span><span class="service-label">04 / Revenire</span><h3>Reintegrare</h3><p>Discută cu noi despre pașii necesari pentru reintegrare.</p><span class="service-arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="service-card" id="transfer" href="/transfer">
+          <span class="service-icon" aria-hidden="true">⇄</span><span class="service-label">05 / Mobilitate</span><h3>Transfer</h3><p>Ia legătura cu echipa noastră pentru informații despre transfer.</p><span class="service-arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="service-card" href="/sub-departamente">
+          <span class="service-icon" aria-hidden="true">⌘</span><span class="service-label">06 / Echipa</span><h3>Sub departamente</h3><p>Descoperă structura echipei și domeniile noastre de activitate.</p><span class="service-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="service-detail section-wrap" id="service-detail" hidden></section>
+
+    <section class="contact-banner">
+      <div class="contact-symbol" aria-hidden="true">+</div>
+      <div><p>Suntem aici să te ajutăm.</p><h2>Ai o întrebare? Hai să vorbim.</h2></div>
+      <a class="button button-primary" href="mailto:relatiipublice@medicipentruoameni.ro">Contactează-ne <span aria-hidden="true">↗</span></a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-main">
+      <a class="brand brand-footer" href="/">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="M24 4v40M4 24h40" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M24 4v40M4 24h40" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg></span>
+        <span class="brand-copy"><strong>SPITALUL MEDICAL</strong><span>ECLIPSE TOWER</span></span>
+      </a>
+      <p>Grijă, profesionalism și încredere.<br>Împreună pentru o comunitate mai sănătoasă.</p>
+      <a class="footer-contact" href="mailto:relatiipublice@medicipentruoameni.ro">relatiipublice@medicipentruoameni.ro <span aria-hidden="true">↗</span></a>
+    </div>
+    <div class="footer-bottom"><span>© 2026 Spitalul Medical Eclipse Tower. Toate drepturile rezervate.</span><a href="/">Pagina principală ↑</a></div>
+  </footer>
+
+  <dialog class="admin-dialog" id="login-dialog" aria-labelledby="login-title">
+    <div class="dialog-heading">
+      <div><span class="dialog-kicker">Spitalul Medical Eclipse Tower</span><h2 id="login-title">Conectare</h2></div>
+      <button class="dialog-close" type="button" data-close-dialog aria-label="Închide">×</button>
+    </div>
+    <form id="login-form" class="login-form">
+      <label for="login-username">Username</label>
+      <input id="login-username" name="username" type="text" autocomplete="username" value="MediciFplayT" required>
+      <label for="login-password">Parolă</label>
+      <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+      <p class="form-message" id="login-message" aria-live="polite"></p>
+      <button class="button button-primary" type="submit">Conectare <span aria-hidden="true">↗</span></button>
+    </form>
+  </dialog>
+
+  <dialog class="admin-dialog admin-panel" id="admin-dialog" aria-labelledby="admin-title">
+    <div class="dialog-heading">
+      <div><span class="dialog-kicker">Panou de administrare</span><h2 id="admin-title">Conducerea spitalului</h2></div>
+      <div class="dialog-actions"><button class="button button-logout" id="logout-button" type="button">Deconectare</button><button class="dialog-close" type="button" data-close-dialog aria-label="Închide">×</button></div>
+    </div>
+    <div class="admin-tabs" role="tablist" aria-label="Administrare">
+      <button class="admin-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="announcements-panel" id="announcements-tab" data-panel="announcements-panel">Anunțuri</button>
+      <button class="admin-tab" type="button" role="tab" aria-selected="false" aria-controls="staff-panel" id="staff-tab" data-panel="staff-panel">Organigramă</button>
+    </div>
+    <section class="admin-section" id="announcements-panel" role="tabpanel" aria-labelledby="announcements-tab">
+      <div class="admin-section-heading"><div><span class="dialog-kicker">Publicare și editare</span><h3>Anunțuri publice</h3></div><p>Sunt afișate întotdeauna cele mai recente trei anunțuri.</p></div>
+      <form id="announcement-form" class="editor-form">
+        <input type="hidden" name="id">
+        <label for="announcement-title">Titlu</label>
+        <input id="announcement-title" name="title" type="text" maxlength="120" required>
+        <label for="announcement-category">Categorie</label>
+        <input id="announcement-category" name="category" type="text" maxlength="40" required>
+        <label for="announcement-body">Mesaj</label>
+        <textarea id="announcement-body" name="body" rows="4" maxlength="1500" required></textarea>
+        <label for="announcement-image">Imagine <span class="input-hint">JPG, PNG sau WebP · maximum 5 MB</span></label>
+        <input id="announcement-image" name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
+        <p class="form-message" id="announcement-message" aria-live="polite"></p>
+        <div class="editor-actions"><button class="button button-primary" type="submit" id="announcement-submit">Publică anunțul <span aria-hidden="true">↗</span></button><button class="button button-secondary" id="announcement-cancel" type="button" hidden>Renunță la editare</button></div>
+      </form>
+      <div class="admin-announcement-list" id="admin-announcement-list"></div>
+    </section>
+    <section class="admin-section" id="staff-panel" role="tabpanel" aria-labelledby="staff-tab" hidden>
+      <div class="admin-section-heading"><div><span class="dialog-kicker">Echipa medicală</span><h3>Organigramă și profiluri</h3></div><p>Adaugă numele și portretul fiecărui membru.</p></div>
+      <div class="admin-staff-list" id="admin-staff-list"></div>
+    </section>
+  </dialog>
+</body>
+</html>
