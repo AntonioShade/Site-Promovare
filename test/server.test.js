@@ -212,7 +212,6 @@ test("serves the site, synchronizes Google Sheets staff, and persists authentica
 
   const updatedDepartmentForm = new FormData();
   updatedDepartmentForm.set("title", "Departament actualizat");
-  updatedDepartmentForm.set("subtitle", "Descriere actualizată");
   updatedDepartmentForm.set("color", "#654321");
   updatedDepartmentForm.set("emblem", new Blob([
     Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/pXcAAAAASUVORK5CYII=", "base64"),
@@ -224,6 +223,7 @@ test("serves the site, synchronizes Google Sheets staff, and persists authentica
   });
   assert.equal(updatedDepartment.response.status, 200);
   assert.equal(updatedDepartment.body.title, "Departament actualizat");
+  assert.equal(updatedDepartment.body.subtitle, "Echipă de test");
   assert.equal(updatedDepartment.body.members[0].contact, "@manager · 456");
   assert.match(updatedDepartment.body.emblem, /^\/uploads\/[a-f0-9-]+\.png$/);
 

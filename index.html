@@ -17,7 +17,12 @@
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="/" aria-label="Spitalul Medical Eclipse Tower - pagina principală">
-        <img class="brand-logo" src="/assets/hospital-logo.png" alt="Spitalul Eclipse Tower">
+        <span class="brand-logo-wrap">
+          <img class="brand-logo" src="/assets/hospital-logo-transparent.png" alt="Spitalul Eclipse Tower">
+          <svg class="brand-pulse" viewBox="0 0 712 200" aria-hidden="true">
+            <path d="M111 164H145L158 128L171 186L185 151L198 168H218" />
+          </svg>
+        </span>
       </a>
 
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-navigation">
@@ -113,7 +118,12 @@
   <footer class="site-footer">
     <div class="footer-main">
       <a class="brand brand-footer" href="/">
-        <img class="brand-logo" src="/assets/hospital-logo.png" alt="Spitalul Eclipse Tower">
+        <span class="brand-logo-wrap">
+          <img class="brand-logo" src="/assets/hospital-logo-transparent.png" alt="Spitalul Eclipse Tower">
+          <svg class="brand-pulse" viewBox="0 0 712 200" aria-hidden="true">
+            <path d="M111 164H145L158 128L171 186L185 151L198 168H218" />
+          </svg>
+        </span>
       </a>
       <p>Grijă, profesionalism și încredere. Împreună pentru o comunitate mai sănătoasă.</p>
     </div>
@@ -183,8 +193,6 @@
         <h4>Adaugă un departament</h4>
         <label for="new-department-title">Denumire departament</label>
         <input id="new-department-title" name="title" type="text" maxlength="100" required>
-        <label for="new-department-subtitle">Descriere scurtă</label>
-        <input id="new-department-subtitle" name="subtitle" type="text" maxlength="120">
         <label for="new-department-color">Culoare chenare</label>
         <input id="new-department-color" name="color" type="color" value="#087afa" required>
         <p class="form-message" id="new-department-message" aria-live="polite"></p>

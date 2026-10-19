@@ -686,12 +686,16 @@ export function createApp(db) {
   app.put("/api/admin/departments/:id", uploadParser.single("emblem"), async (request, response, next) => {
     let savedEmblem = "";
     try {
-      const { title, subtitle = "", color } = request.body ?? {};
-      if (!validDepartment(title, subtitle, color)) {
-        return response.status(400).json({ error: "Completează corect denumirea, descrierea și culoarea departamentului." });
+      const { title, color } = request.body ?? {};
+      if (!validDepartment(title, "", color)) {
+        return response.status(400).json({ error: "Completează corect denumirea și culoarea departamentului." });
       }
       const existing = db.prepare("SELECT * FROM departments WHERE id = ?").get(request.params.id);
       if (!existing) return response.status(404).json({ error: "Departamentul nu a fost găsit." });
+      const subtitle = typeof request.body?.subtitle === "string" ? request.body.subtitle : existing.subtitle;
+      if (subtitle.trim().length > 120) {
+        return response.status(400).json({ error: "Descrierea departamentului trebuie să aibă cel mult 120 de caractere." });
+      }
       if (request.file) savedEmblem = await saveImage(request.file);
       const emblem = savedEmblem || existing.emblem;
       db.prepare("UPDATE departments SET title = ?, subtitle = ?, color = ?, emblem = ? WHERE id = ?")
