@@ -341,9 +341,35 @@ function renderAnnouncements() {
   if (isAuthenticated) renderAdminAnnouncements();
 }
 
+const orgIconPaths = {
+  "org-director": ["m3 7 4 3 5-7 5 7 4-3-2 11H5L3 7Z", "M6 15h12"],
+  "org-deputy": ["M16 20v-1.5a4.5 4.5 0 0 0-9 0V20", "M12 11a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z", "M20 20v-1a4 4 0 0 0-3-3.9", "M17 5.2a3.2 3.2 0 0 1 0 6.1"],
+  "org-inspector": ["M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z", "M12 8v8M8 12h8"],
+  "org-surgeon": ["m14 6 4 4", "M13 7 5 15l-1 5 5-1 8-8", "m16 5 3-3 3 3-3 3"],
+};
+
+function createOrgIcon(paths, className) {
+  const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  icon.classList.add(className);
+  icon.setAttribute("viewBox", "0 0 24 24");
+  icon.setAttribute("fill", "none");
+  icon.setAttribute("stroke", "currentColor");
+  icon.setAttribute("stroke-width", "1.8");
+  icon.setAttribute("stroke-linecap", "round");
+  icon.setAttribute("stroke-linejoin", "round");
+  icon.setAttribute("aria-hidden", "true");
+  for (const pathData of paths) {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", pathData);
+    icon.append(path);
+  }
+  return icon;
+}
+
 function makeStaffCard(member) {
   const card = document.createElement("article");
   card.className = `org-card ${member.style}`;
+  card.setAttribute("aria-label", `${member.name}, ${member.role}`);
   const portrait = document.createElement("div");
   portrait.className = "org-portrait";
   portrait.setAttribute("aria-hidden", "true");
@@ -363,143 +389,73 @@ function makeStaffCard(member) {
   }
   const details = document.createElement("div");
   details.className = "org-details";
+  const heading = document.createElement("div");
+  heading.className = "org-card-heading";
   const name = document.createElement("strong");
   name.className = "org-name";
   name.textContent = member.name;
+  heading.append(name, createOrgIcon(orgIconPaths[member.style] ?? [], "org-role-icon"));
   const role = document.createElement("span");
   role.className = "org-role";
   role.textContent = member.role;
   const seniority = document.createElement("span");
   seniority.className = "org-seniority";
-  seniority.textContent = `Vechime: ${member.joinedAt || "—"}`;
-  details.append(name, role, seniority);
+  seniority.append(createOrgIcon(["M7 3v3M17 3v3M4 9h16", "M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z", "M8 13h2M14 13h2M8 16h2"], "org-calendar-icon"));
+  const joinedAt = document.createElement("span");
+  joinedAt.textContent = `Vechime: ${member.joinedAt || "—"}`;
+  seniority.append(joinedAt);
+  details.append(heading, role, seniority);
   card.append(portrait, details);
   return card;
 }
 
-function makeOrgConnector(link, index) {
-  const previousLevel = link.previousElementSibling;
-  const nextLevel = link.nextElementSibling;
-  if (!previousLevel || !nextLevel) return;
+let orgTreeResizeObserver;
 
-  const linkBounds = link.getBoundingClientRect();
-  const parents = [...previousLevel.querySelectorAll(":scope > .org-card, :scope > .org-tree-node > .org-card")];
-  const children = [...nextLevel.querySelectorAll(":scope > .org-tree-node > .org-card")];
-  if (!parents.length || !children.length || !linkBounds.width || !linkBounds.height) return;
-
-  const svgNamespace = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(svgNamespace, "svg");
-  svg.classList.add("org-connector-svg");
-  svg.setAttribute("viewBox", `0 0 ${linkBounds.width} ${linkBounds.height}`);
-  svg.setAttribute("preserveAspectRatio", "none");
-  svg.setAttribute("aria-hidden", "true");
-  const roleStyle = connectorColors(children[0]);
-  svg.style.setProperty("--org-line-color", roleStyle[0]);
-
-  const gradient = document.createElementNS(svgNamespace, "linearGradient");
-  const gradientId = `org-connector-gradient-${index}`;
-  gradient.id = gradientId;
-  gradient.setAttribute("x1", "0");
-  gradient.setAttribute("x2", "1");
-  gradient.setAttribute("y1", "0");
-  gradient.setAttribute("y2", "1");
-  for (const [offset, color] of [["0%", roleStyle[0]], ["100%", roleStyle[1]]]) {
-    const stop = document.createElementNS(svgNamespace, "stop");
-    stop.setAttribute("offset", offset);
-    stop.setAttribute("stop-color", color);
-    gradient.append(stop);
-  }
-  const defs = document.createElementNS(svgNamespace, "defs");
-  defs.append(gradient);
-  svg.append(defs);
-
-  const centerX = linkBounds.width / 2;
-  const startY = 1;
-  const endY = linkBounds.height - 1;
-  const mergeY = endY * 0.37;
-  const branchY = endY * 0.66;
-  const parentXs = parents.map((parent) => {
-    const bounds = parent.getBoundingClientRect();
-    return bounds.left + bounds.width / 2 - linkBounds.left;
-  });
-  const childXs = children.map((child) => {
-    const bounds = child.getBoundingClientRect();
-    return bounds.left + bounds.width / 2 - linkBounds.left;
-  });
-  const paths = [];
-  const addPath = (pathData) => paths.push(pathData);
-
-  if (parentXs.length === 1) {
-    addPath(`M ${parentXs[0]} ${startY} V ${mergeY} Q ${parentXs[0]} ${branchY} ${centerX} ${branchY}`);
-  } else {
-    for (const parentX of parentXs) {
-      const bendY = mergeY - 13;
-      addPath(`M ${parentX} ${startY} V ${bendY} Q ${parentX} ${mergeY} ${centerX} ${mergeY}`);
-    }
-    addPath(`M ${centerX} ${mergeY} V ${branchY}`);
-  }
-
-  const leftChildX = Math.min(...childXs);
-  const rightChildX = Math.max(...childXs);
-  const childBend = Math.min(18, (rightChildX - leftChildX) / 4, (endY - branchY) / 2);
-  if (childBend > 0) {
-    addPath(`M ${leftChildX + childBend} ${branchY} H ${rightChildX - childBend}`);
-  }
-  for (const childX of childXs) {
-    if (childBend === 0 || Math.abs(childX - centerX) < 1) {
-      addPath(`M ${childX} ${branchY} V ${endY}`);
-    } else if (childX < centerX) {
-      addPath(`M ${childX + childBend} ${branchY} Q ${childX} ${branchY} ${childX} ${branchY + childBend} V ${endY}`);
-    } else {
-      addPath(`M ${childX - childBend} ${branchY} Q ${childX} ${branchY} ${childX} ${branchY + childBend} V ${endY}`);
-    }
-  }
-
-  paths.forEach((pathData, index) => {
-    for (const [className, strokeWidth] of [["org-connector-shadow", 8], ["org-connector-rail-secondary", 1.4], ["org-connector-rail", 3], ["org-connector-highlight", 1], ["org-connector-flow", 2.4]]) {
-      const path = document.createElementNS(svgNamespace, "path");
+function updateOrgConnectors(tree) {
+  const treeRect = tree.getBoundingClientRect();
+  if (!treeRect.width) return;
+  for (const connector of tree.querySelectorAll(".org-tree-link")) {
+    const sourceCards = connector.previousElementSibling.querySelectorAll(".org-card");
+    const targetCards = connector.nextElementSibling.querySelectorAll(".org-card");
+    const svg = connector.querySelector("svg");
+    const sourceCenters = [...sourceCards].map((card) => card.getBoundingClientRect().left + card.getBoundingClientRect().width / 2 - treeRect.left);
+    const targetCenters = [...targetCards].map((card) => card.getBoundingClientRect().left + card.getBoundingClientRect().width / 2 - treeRect.left);
+    const width = Math.round(treeRect.width);
+    svg.setAttribute("viewBox", `0 0 ${width} 64`);
+    svg.replaceChildren();
+    const appendPath = (pathData) => {
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttribute("d", pathData);
-      path.setAttribute("pathLength", "1");
-      path.classList.add(className);
-      path.setAttribute("stroke-width", String(strokeWidth));
-      if (className === "org-connector-flow") {
-        path.setAttribute("stroke", `url(#${gradientId})`);
-      }
-      if (className === "org-connector-flow") path.style.setProperty("--flow-delay", `${index * -0.38}s`);
       svg.append(path);
+      const flow = path.cloneNode();
+      flow.classList.add("org-flow-line");
+      flow.style.animationDelay = `-${svg.querySelectorAll(".org-flow-line").length * 0.16}s`;
+      svg.append(flow);
+    };
+    const sourceY = sourceCenters.length > 1 ? 16 : 0;
+    if (sourceCenters.length > 1) {
+      sourceCenters.forEach((x) => appendPath(`M ${x} 0 V ${sourceY}`));
+      appendPath(`M ${Math.min(...sourceCenters)} ${sourceY} H ${Math.max(...sourceCenters)}`);
+    } else {
+      appendPath(`M ${sourceCenters[0]} 0 V 30`);
     }
-  });
-
-  const junction = document.createElementNS(svgNamespace, "circle");
-  junction.setAttribute("cx", String(centerX));
-  junction.setAttribute("cy", String(branchY));
-  junction.setAttribute("r", "5");
-  junction.classList.add("org-connector-junction");
-  svg.append(junction);
-  link.replaceChildren(svg);
-}
-
-function connectorColors(child) {
-  if (child.classList.contains("org-director")) return ["#74d6ff", "#3997ff"];
-  return ["#55c9ff", "#435cff"];
-}
-
-function updateOrgConnectors() {
-  staffList.querySelectorAll(".org-tree-link").forEach(makeOrgConnector);
+    const sourceCenter = sourceCenters.reduce((sum, x) => sum + x, 0) / sourceCenters.length;
+    const targetCenter = targetCenters.reduce((sum, x) => sum + x, 0) / targetCenters.length;
+    if (sourceCenters.length > 1) appendPath(`M ${sourceCenter} ${sourceY} V 30`);
+    if (sourceCenters.length > 1 && Math.abs(sourceCenter - targetCenter) > 1) appendPath(`M ${sourceCenter} 30 H ${targetCenter}`);
+    if (targetCenters.length > 1) appendPath(`M ${Math.min(...targetCenters)} 30 H ${Math.max(...targetCenters)}`);
+    targetCenters.forEach((x) => appendPath(`M ${x} 30 V 64`));
+    const junction = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    junction.setAttribute("cx", String(targetCenter));
+    junction.setAttribute("cy", "30");
+    junction.setAttribute("r", "3.5");
+    svg.append(junction);
+  }
 }
 
 function renderStaff() {
   const tree = document.createElement("div");
   tree.className = "org-tree";
-
-  const decorations = document.createElement("div");
-  decorations.className = "org-decorations";
-  decorations.setAttribute("aria-hidden", "true");
-  for (let index = 0; index < 8; index += 1) {
-    const orbit = document.createElement("span");
-    orbit.className = `org-decoration org-decoration-${index + 1}`;
-    decorations.append(orbit);
-  }
 
   const orderedStaff = (style) => staff.filter((member) => member.style === style);
 
@@ -509,48 +465,54 @@ function renderStaff() {
     node.append(makeStaffCard(member));
     return node;
   };
-
   const director = staff.find((member) => member.style === "org-director");
+  let previousLevel = null;
   if (director) {
     const root = document.createElement("div");
     root.className = "org-tree-root";
+    root.setAttribute("role", "group");
+    root.setAttribute("aria-label", "Conducere generală");
     root.append(makeStaffCard(director));
     tree.append(root);
+    previousLevel = root;
   }
-
-  const addLink = () => {
-    const link = document.createElement("div");
-    link.className = "org-tree-link";
-    link.setAttribute("aria-hidden", "true");
-    tree.append(link);
-  };
-
   const addLevel = (members, levelClass, label) => {
-    if (members.length === 0) return false;
+    if (members.length === 0) return;
+    if (previousLevel) {
+      const connector = document.createElement("div");
+      connector.className = "org-tree-link";
+      connector.setAttribute("aria-hidden", "true");
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("preserveAspectRatio", "none");
+      connector.append(svg);
+      tree.append(connector);
+    }
     const row = document.createElement("div");
-    row.className = `org-tree-row ${levelClass}`;
-    row.style.gridTemplateColumns = `repeat(${members.length}, minmax(0, 1fr))`;
-    row.style.setProperty("--org-branch-inset", `${50 / members.length}%`);
-    row.setAttribute("role", "group");
+    row.className = `org-tree-row ${levelClass}${members.length > 1 ? " has-branches" : ""}`;
+    row.style.setProperty("--org-branch-start", `${50 / members.length}%`);
+    row.style.setProperty("--org-branch-width", `${100 - (100 / members.length)}%`);
+    row.style.setProperty("--org-column-count", String(members.length));
+    row.setAttribute("role", "list");
     row.setAttribute("aria-label", label);
     for (const member of members) row.append(makeNode(member));
+    row.querySelectorAll(".org-tree-node").forEach((node) => node.setAttribute("role", "listitem"));
     tree.append(row);
-    return true;
+    previousLevel = row;
   };
 
-  if (director) addLink();
-  const hasDeputies = addLevel(orderedStaff("org-deputy"), "org-row-deputies", "Directorii adjuncți");
-  if (hasDeputies) addLink();
-  const hasInspectors = addLevel(orderedStaff("org-inspector"), "org-row-inspectors", "Medicii inspectori");
-  if (hasInspectors) addLink();
+  addLevel(orderedStaff("org-deputy"), "org-row-deputies", "Directorii adjuncți");
+  addLevel(orderedStaff("org-inspector"), "org-row-inspectors", "Medicii inspectori");
   addLevel(orderedStaff("org-surgeon"), "org-row-surgeons", "Medicii chirurgi");
 
-  staffList.replaceChildren(decorations, tree);
-  requestAnimationFrame(updateOrgConnectors);
+  staffList.replaceChildren(tree);
+  orgTreeResizeObserver?.disconnect();
+  if ("ResizeObserver" in window) {
+    orgTreeResizeObserver = new ResizeObserver(() => updateOrgConnectors(tree));
+    orgTreeResizeObserver.observe(tree);
+  }
+  requestAnimationFrame(() => updateOrgConnectors(tree));
   if (isAuthenticated) renderAdminStaff();
 }
-
-window.addEventListener("resize", () => requestAnimationFrame(updateOrgConnectors), { passive: true });
 
 const departmentEmblems = {
   "medicina-muncii": "/assets/department-medicina-muncii.png",

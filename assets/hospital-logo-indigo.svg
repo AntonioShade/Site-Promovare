@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 712 200" fill="none">
+  <defs>
+    <linearGradient id="tower" x1="95" y1="24" x2="228" y2="164" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9BA7F3"/>
+      <stop offset="1" stop-color="#5969C5"/>
+    </linearGradient>
+    <linearGradient id="wing" x1="50" y1="76" x2="122" y2="155" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8090E8"/>
+      <stop offset="1" stop-color="#4D5EAD"/>
+    </linearGradient>
+  </defs>
+  <path d="M50 151V88l51-30v83l-51 10ZM214 141V58l51 30v63l-51-10Z" fill="url(#wing)" fill-opacity=".3" stroke="#AEB9FF" stroke-width="5" stroke-linejoin="round"/>
+  <path d="m60 94 32-18M60 111l32-18M60 128l32-18M224 76l31 18M224 94l31 18M224 112l31 18" stroke="#AEB9FF" stroke-width="5" stroke-linecap="round"/>
+  <path d="M101 158V52l57-34 57 34v106" fill="url(#tower)" fill-opacity=".28" stroke="#D7DCFF" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M119 158V68l39-23 39 23v90" fill="#283154" fill-opacity=".8" stroke="#8997E7" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M148 48h21v14h15v21h-15v15h-21V83h-15V62h15V48Z" fill="#CE8292" stroke="#F0C1CB" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M280 46v112" stroke="#6978DC" stroke-width="2"/>
+  <text x="302" y="83" fill="#C3C9E4" font-family="Manrope, Arial, sans-serif" font-size="27" font-weight="700" letter-spacing="5">SPITALUL</text>
+  <text x="302" y="130" fill="#F0F1FA" font-family="Manrope, Arial, sans-serif" font-size="40" font-weight="800" letter-spacing="1">ECLIPSE</text>
+  <text x="501" y="130" fill="#AAB3FF" font-family="Manrope, Arial, sans-serif" font-size="40" font-weight="800" letter-spacing="-.5">TOWER</text>
+</svg>

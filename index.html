@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#080f1c">
+  <meta name="theme-color" content="#5369e0">
   <meta name="description" content="Spitalul Medical Eclipse Tower — află noutățile, serviciile și informațiile utile despre echipa noastră medicală.">
   <title>Spitalul Medical Eclipse Tower | Împreună pentru sănătate</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,12 +13,42 @@
   <script src="script.js" defer></script>
 </head>
 <body>
+  <div class="medical-decorations" aria-hidden="true">
+    <svg class="medical-decoration medical-stethoscope" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M28 16v20c0 18 10 30 22 30s22-12 22-30V16M28 16v8M72 16v8M50 66v8c0 10 7 16 16 16s16-6 16-16v-8" />
+      <circle cx="28" cy="14" r="4" /><circle cx="72" cy="14" r="4" /><circle cx="82" cy="66" r="7" />
+    </svg>
+    <svg class="medical-decoration medical-kit" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 36h64v48H18zM36 36V27a5 5 0 0 1 5-5h18a5 5 0 0 1 5 5v9M50 49v22M39 60h22" />
+    </svg>
+    <svg class="medical-decoration medical-ambulance" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 34h48v39H12zM60 47h17l12 13v13H60zM69 48v13h18M22 73a8 8 0 1 0 16 0M68 73a8 8 0 1 0 16 0M34 43v16M26 51h16" />
+    </svg>
+    <svg class="medical-decoration medical-capsule" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <g transform="rotate(-38 50 50)"><rect x="27" y="39" width="46" height="22" rx="11" /><path d="M50 40v20" /></g>
+    </svg>
+    <svg class="medical-decoration medical-syringe" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <g transform="rotate(-42 50 50)"><path d="M50 17v14M42 31h16v39H42zM38 40h24M50 70v13M44 83h12M46 17h8M38 49h4M38 58h4" /></g>
+    </svg>
+    <svg class="medical-decoration medical-thermometer" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M42 58V27a10 10 0 0 1 20 0v31a18 18 0 1 1-20 0Z" /><path d="M52 37v35" /><circle cx="52" cy="73" r="7" />
+    </svg>
+    <svg class="medical-decoration medical-bandage" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <g transform="rotate(-38 50 50)"><rect x="22" y="37" width="56" height="26" rx="6" /><path d="M41 38v24M59 38v24M48 46h4M48 54h4" /></g>
+    </svg>
+    <svg class="medical-decoration medical-record" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M28 19h32l14 14v48H28zM60 19v15h14M39 48h24M39 58h24M39 68h14" /><path d="M47 37v8M43 41h8" />
+    </svg>
+    <svg class="medical-decoration medical-heartbeat" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M50 82S17 62 17 39a18 18 0 0 1 33-10 18 18 0 0 1 33 10c0 23-33 43-33 43Z" /><path d="M26 51h14l7-12 9 25 8-13h11" />
+    </svg>
+  </div>
   <a class="skip-link" href="#continut">Sari la conținut</a>
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="/" aria-label="Spitalul Medical Eclipse Tower - pagina principală">
         <span class="brand-logo-wrap">
-          <img class="brand-logo" src="/assets/hospital-logo-transparent.png" alt="Spitalul Eclipse Tower">
+          <img class="brand-logo" src="/assets/hospital-logo-indigo.svg" alt="Spitalul Eclipse Tower">
           <svg class="brand-pulse" viewBox="0 0 712 200" aria-hidden="true">
             <path d="M111 164H145L158 128L171 186L185 151L198 168H218" />
           </svg>
@@ -36,7 +66,6 @@
         <a href="/conducere">Conducere</a>
         <a href="/sub-departamente">Sub Departamente</a>
         <a href="/cereri-de-audienta">Cereri de audiență</a>
-        <a href="/informatii">Informații</a>
         <a href="/criterii-admitere">Criterii Admitere</a>
         <a href="/reintegrare">Reintegrare</a>
         <a href="/transfer">Transfer</a>
@@ -64,8 +93,13 @@
 
     <section class="intro section-wrap" id="despre-noi">
       <div class="about-panel">
-        <h1 class="about-title">Despre noi</h1>
-        <p class="about-description">Departamentul Medical funcționează cu un singur scop esențial: să îți oferim îngrijire de cea mai înaltă calitate, într-un cadru profesional, dedicat sănătății tale și bunăstării tale. Echipa noastră se angajează să îți furnizeze tratamente personalizate, bazate pe cele mai noi descoperiri și inovații din domeniul medical, astfel încât să te bucuri de un tratament eficient și sigur. În fiecare etapă a procesului, de la consult și diagnostic până la tratament și recuperare, te asigurăm că vei beneficia de soluții medicale de top, adaptate nevoilor tale specifice. În plus, ne concentrăm nu doar pe tratamentele fizice, ci și pe confortul și starea ta mentală, oferindu-ți un mediu calm, prietenos și sigur, unde să te simți încrezător și sprijinit pe parcursul întregului proces medical. Înțelegem cât de important este să fii tratat cu respect și empatie, motiv pentru care fiecare membru al echipei noastre este pregătit să îți acorde atenția de care ai nevoie. Astfel, în Departamentul Medical, pacienții nu sunt doar numere, ci sunt tratați ca persoane, cu nevoi individuale și unici în experiențele lor.</p>
+        <h1 class="about-title">Despre Noi</h1>
+        <div class="about-description">
+          <p>În cadrul <strong>Departamentului Medical</strong>, sănătatea și starea ta de bine reprezintă nu doar o prioritate, ci o adevărată vocație pentru fiecare dintre noi. Este o onoare și un privilegiu să îți fim alături și să ne încredințezi cel mai prețios bun al tău: sănătatea.</p>
+          <p>Ne dedicăm zilnic furnizării de servicii medicale de o calitate excepțională, combinând cele mai noi inovații tehnologice cu tratamente atent personalizate. Pentru noi, fiecare pacient care ne trece pragul este unic și valoros — un om extraordinar cu o poveste proprie, care merită întreaga noastră grijă, admirație și atenție necondiționată.</p>
+          <p>De la primul consult și până la recuperarea completă, îți punem la dispoziție nu doar expertiza noastră, ci și întreaga noastră căldură sufletească. Construim fiecare etapă pe un fundament de încredere, empatie profundă și respect desăvârșit, asigurându-ne că te simți răsfățat, protejat și ascultat în orice moment. Confortul tău fizic și emoțional este centrul universului nostru medical.</p>
+          <p><strong>Aici nu ești doar o fișă medicală sau un simplu pacient. Ești un om special, a cărui sănătate, liniște și zâmbet ne pasă cu adevărat, iar starea ta de bine este cea mai mare satisfacție a noastră.</strong></p>
+        </div>
       </div>
     </section>
 
@@ -119,7 +153,7 @@
     <div class="footer-main">
       <a class="brand brand-footer" href="/">
         <span class="brand-logo-wrap">
-          <img class="brand-logo" src="/assets/hospital-logo-transparent.png" alt="Spitalul Eclipse Tower">
+          <img class="brand-logo" src="/assets/hospital-logo-indigo.svg" alt="Spitalul Eclipse Tower">
           <svg class="brand-pulse" viewBox="0 0 712 200" aria-hidden="true">
             <path d="M111 164H145L158 128L171 186L185 151L198 168H218" />
           </svg>
