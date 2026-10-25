@@ -427,29 +427,16 @@ function updateOrgConnectors(tree) {
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttribute("d", pathData);
       svg.append(path);
-      const flow = path.cloneNode();
-      flow.classList.add("org-flow-line");
-      flow.style.animationDelay = `-${svg.querySelectorAll(".org-flow-line").length * 0.16}s`;
-      svg.append(flow);
     };
-    const sourceY = sourceCenters.length > 1 ? 16 : 0;
-    if (sourceCenters.length > 1) {
-      sourceCenters.forEach((x) => appendPath(`M ${x} 0 V ${sourceY}`));
-      appendPath(`M ${Math.min(...sourceCenters)} ${sourceY} H ${Math.max(...sourceCenters)}`);
-    } else {
-      appendPath(`M ${sourceCenters[0]} 0 V 30`);
-    }
     const sourceCenter = sourceCenters.reduce((sum, x) => sum + x, 0) / sourceCenters.length;
     const targetCenter = targetCenters.reduce((sum, x) => sum + x, 0) / targetCenters.length;
-    if (sourceCenters.length > 1) appendPath(`M ${sourceCenter} ${sourceY} V 30`);
-    if (sourceCenters.length > 1 && Math.abs(sourceCenter - targetCenter) > 1) appendPath(`M ${sourceCenter} 30 H ${targetCenter}`);
-    if (targetCenters.length > 1) appendPath(`M ${Math.min(...targetCenters)} 30 H ${Math.max(...targetCenters)}`);
-    targetCenters.forEach((x) => appendPath(`M ${x} 30 V 64`));
-    const junction = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    junction.setAttribute("cx", String(targetCenter));
-    junction.setAttribute("cy", "30");
-    junction.setAttribute("r", "3.5");
-    svg.append(junction);
+    appendPath(`M ${sourceCenter} 0 V 32`);
+    if (targetCenters.length > 1) {
+      appendPath(`M ${Math.min(...targetCenters)} 32 H ${Math.max(...targetCenters)}`);
+    } else if (Math.abs(sourceCenter - targetCenter) > 1) {
+      appendPath(`M ${sourceCenter} 32 H ${targetCenter}`);
+    }
+    targetCenters.forEach((x) => appendPath(`M ${x} 32 V 64`));
   }
 }
 
