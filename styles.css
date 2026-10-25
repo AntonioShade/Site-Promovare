@@ -30,9 +30,11 @@ main { flex: 1 0 auto; }
 .site-header .brand-logo-wrap { width: clamp(270px, 23vw, 310px); }
 .brand-logo { display: block; width: 100%; height: auto; object-fit: contain; }
 .brand-pulse { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.brand-pulse path { fill: none; stroke: #d0d5ff; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 18 160; animation: brand-pulse-travel 2.2s linear infinite; filter: drop-shadow(0 0 3px #6978dc) drop-shadow(0 0 6px rgba(104, 119, 220, .65)); }
-@keyframes brand-pulse-travel { to { stroke-dashoffset: -178; } }
-@media (prefers-reduced-motion: reduce) { .brand-pulse path { animation: none; stroke-dasharray: none; opacity: .82; } }
+.brand-pulse path { fill: none; stroke: #62b5f5; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.brand-pulse-track { opacity: .42; }
+.brand-pulse-active { stroke-dasharray: 24 402; animation: brand-pulse-travel 2.6s linear infinite; filter: drop-shadow(0 0 3px #62b5f5) drop-shadow(0 0 6px rgba(98, 181, 245, .75)); }
+@keyframes brand-pulse-travel { to { stroke-dashoffset: -426; } }
+@media (prefers-reduced-motion: reduce) { .brand-pulse-active { animation: none; stroke-dasharray: none; opacity: .82; } }
 .brand-mark { display: grid; width: 38px; height: 38px; place-items: center; color: var(--green); }
 .brand-mark svg { width: 100%; height: 100%; }
 .brand-copy { display: flex; flex-direction: column; line-height: 1.1; letter-spacing: .1em; }
@@ -820,16 +822,16 @@ main, .site-footer { position: relative; z-index: 1; }
 .service-info-card { transition: background .3s ease, transform .3s ease, box-shadow .3s ease, border-color .3s ease; }
 .service-info-card:hover, .announcement-card:hover { box-shadow: 0 20px 44px rgba(5, 7, 20, .32), 0 0 0 1px rgba(231, 235, 255, .15), 0 0 24px rgba(231, 235, 255, .25), 0 0 40px rgba(231, 235, 255, .1), inset 0 1px rgba(255, 255, 255, .16); }
 
-/* Brighter indigo palette and refreshed hierarchy */
+/* Brighter palette and refreshed hierarchy */
 :root {
   --ink: #f4f5ff;
   --muted: #c0c6e0;
-  --green: #7d8fff;
-  --green-dark: #586ce0;
+  --green: #62b5f5;
+  --green-dark: #348fcf;
   --mint: #303961;
   --paper: #15192e;
   --line: #46507a;
-  --coral: #ef91a6;
+  --coral: #62b5f5;
 }
 body { background: #15192e; }
 body::before {
@@ -907,7 +909,7 @@ body::before {
 .service-detail-audience .service-detail-steps li, .service-info-card { background: linear-gradient(145deg, #30385f, #252c4a); border-color: #56618f; }
 .service-info-card h2, .service-request-copy h2 { color: #f5f6ff; }
 .service-info-card p, .service-request-copy p, .service-detail-description { color: #c3c9e2; }
-.service-info-card-2, .service-info-card-3, .service-info-card-4, .service-info-card-5, .service-info-card-6, .service-info-card-7, .service-info-card-8, .service-info-card-9 { --card-accent: #8293ff; }
+.service-info-card-1, .service-info-card-2, .service-info-card-3, .service-info-card-4, .service-info-card-5, .service-info-card-6, .service-info-card-7, .service-info-card-8, .service-info-card-9 { --card-accent: #8293ff; }
 .service-request-card { background: linear-gradient(145deg, #333d68, #252d4d); border-color: #6675b1; }
 .service-icon { color: #e2e7ff; background: #45538f; }
 .site-footer { background: #121629; border-color: #404a72; }
@@ -1533,3 +1535,93 @@ body::before {
   .org-card.org-inspector::after,
   .org-card.org-surgeon::after { animation: none; }
 }
+
+:root {
+  --brand-accent: #62b5f5;
+  --green: var(--brand-accent);
+  --green-dark: #348fcf;
+  --coral: var(--brand-accent);
+  --line: #3d5570;
+}
+.main-navigation a:hover, .main-navigation a:focus-visible,
+.main-navigation a[aria-current="page"] { color: var(--brand-accent); }
+.main-navigation a[aria-current="page"]::after { background: var(--brand-accent); }
+.button-login, .button-login:hover, .admin-dialog .button-login {
+  color: #fff;
+  background: linear-gradient(135deg, #62b5f5, #348fcf);
+  border-color: #9bd7ff;
+  box-shadow: 0 6px 22px rgba(98, 181, 245, .28);
+}
+.button-primary { background: linear-gradient(135deg, #62b5f5, #348fcf); }
+.button-primary:hover { background: linear-gradient(135deg, #78c3fa, #409bd7); }
+.hero h1 span, .intro h2 span, .section-heading h2 span,
+.leadership h2 span, .service-detail-title span { color: var(--brand-accent); }
+.section-kicker, .eyebrow, .text-link, .inline-link, .service-arrow,
+.announcement-footer a, .leadership .section-kicker { color: var(--brand-accent); }
+.eyebrow > span, .scroll-cue span { background: var(--brand-accent); }
+.note-icon { color: var(--brand-accent); }
+.hero-visual { border-color: rgba(98, 181, 245, .62); box-shadow: 0 18px 48px rgba(4, 6, 18, .42), 0 0 36px rgba(98, 181, 245, .16); }
+.about-panel { border-color: rgba(98, 181, 245, .62); }
+.about-panel::before, .department-group::before { background: linear-gradient(90deg, transparent, var(--brand-accent), transparent); }
+.about-panel::after { background: rgba(98, 181, 245, .18); }
+.about-description strong { color: #9bd7ff; }
+.announcement-card:hover { border-color: #86cbfa; }
+.org-chart { border-color: rgba(98, 181, 245, .62); }
+.org-card.org-director, .org-card.org-deputy, .org-card.org-inspector, .org-card.org-surgeon {
+  --org-card-glow: var(--brand-accent);
+  background: linear-gradient(155deg, #345c7b, #263a52 75%);
+  border-color: rgba(98, 181, 245, .45);
+}
+.org-card.org-director { background: linear-gradient(145deg, #3d6c91, #2b4865); }
+.org-portrait, .org-card.org-director .org-portrait,
+.org-card.org-deputy .org-portrait, .org-card.org-inspector .org-portrait,
+.org-card.org-surgeon .org-portrait {
+  background: linear-gradient(145deg, #62b5f5, #347eb8);
+}
+.org-tree-link { background: linear-gradient(180deg, #9bd7ff, #62b5f5); box-shadow: 0 0 8px rgba(98, 181, 245, .5); }
+.service-detail-info-page { --info-accent: var(--brand-accent); }
+.service-info-card-1, .service-info-card-2, .service-info-card-3,
+.service-info-card-4, .service-info-card-5, .service-info-card-6,
+.service-info-card-7, .service-info-card-8, .service-info-card-9 {
+  --card-accent: var(--brand-accent);
+}
+.service-request-card { border-color: rgba(98, 181, 245, .58); }
+.service-step-number { color: #b9e2ff; border-color: rgba(98, 181, 245, .6); }
+.service-request-icon, .contact-symbol { background: var(--brand-accent); }
+.admin-tab.is-active { color: #b9e2ff; border-bottom-color: var(--brand-accent); }
+.dialog-kicker, .staff-editor-portrait, .announcement-date span,
+.footer-bottom a { color: var(--brand-accent); }
+.service-icon { color: #d9efff; background: #315b7b; }
+.image-label { background: rgba(52, 143, 207, .94); }
+.admin-dialog .dialog-close:hover { border-color: var(--brand-accent); }
+.login-form input:focus, .editor-form input:focus, .editor-form textarea:focus,
+.staff-editor input:focus { outline-color: rgba(98, 181, 245, .4); border-color: var(--brand-accent); }
+.medical-decoration { color: #9bd7ff; filter: drop-shadow(0 0 12px rgba(98, 181, 245, .35)); }
+
+/* Background palette: deep ocean blue shifting toward soft violet */
+:root { --paper: #12264a; --line: #3b5f8f; }
+body { background: #12264a; }
+body::before {
+  background:
+    radial-gradient(ellipse at 12% 8%, rgba(70, 150, 230, .34), transparent 45%),
+    radial-gradient(ellipse at 88% 45%, rgba(112, 110, 225, .24), transparent 42%),
+    radial-gradient(ellipse at 50% 100%, rgba(52, 120, 190, .26), transparent 50%),
+    linear-gradient(150deg, #0f2347 0%, #1a3a6e 48%, #2b3b82 100%);
+}
+.site-header { background: rgba(15, 33, 66, .93); border-color: #365d8f; }
+.hero, .departments-page, .service-detail { background-color: rgba(20, 45, 88, .62); }
+.intro, .announcements, .leadership { background: linear-gradient(135deg, rgba(17, 40, 80, .9), rgba(35, 58, 120, .82)); border-color: #365d8f; }
+.about-panel, .announcement-card, .contact-banner, .department-group,
+.service-detail-audience .service-detail-steps li, .service-info-card { background: linear-gradient(145deg, #254d84, #1b3769); border-color: #4a78b0; }
+.service-request-card { background: linear-gradient(145deg, #2a5690, #1c3a6c); }
+.org-chart { background: linear-gradient(145deg, rgba(31, 66, 118, .96), rgba(22, 45, 90, .98)); }
+.org-tree-row .org-card, .org-card.org-director, .org-card.org-deputy, .org-card.org-inspector, .org-card.org-surgeon { background: linear-gradient(155deg, #2f6196, #21416f 75%); }
+.org-card.org-director { background: linear-gradient(145deg, #3a75ae, #28507f); }
+.site-footer { background: #0c1c3a; border-color: #335a8a; }
+.footer-bottom { border-color: #335a8a; }
+.admin-dialog { background: #173560; border-color: #4a78b0; }
+.editor-form, .admin-list-row, .staff-editor, .admin-department-editor, .department-settings-form, .department-member-editor { background: #1d4175; border-color: #4a78b0; }
+.login-form input, .editor-form input:not([type=file]), .editor-form textarea, .staff-editor input:not([type=file]), .department-settings-form input:not([type=file]):not([type=color]), .department-member-editor input:not([type=file]), .department-create-form input:not([type=file]):not([type=color]) { background: #102448; border-color: #4a78b0; }
+.dialog-close { background: #2a5690; border-color: #5b8cc4; }
+.admin-tabs, .dialog-heading { border-color: #3b5f8f; }
+@media (max-width: 820px) { .main-navigation { background: #12264a; } }

@@ -48,15 +48,15 @@ const pageRoutes = {
     section: "service-detail",
     description: "Informații importante despre cerințele și regulile departamentului.",
     infoCards: [
-      { title: "Ore necesare", text: "Minimum 50 de ore pentru a aplica în departament.", icon: "calendar" },
-      { title: "Personal nou", text: "CK îți permite să aplici chiar și cu 0 ore.", icon: "person" },
-      { title: "Estetică", text: "Tatuajele de pe față trebuie eliminate la intrare.", icon: "shield" },
-      { title: "Complexitate", text: "Structura este complexă și necesită timp de învățare.", icon: "network" },
-      { title: "Regulament", text: "Regulamentul pentru susținerea testelor se găsește pe forum.", icon: "document" },
-      { title: "Blacklist", text: "Prea multe intrări și ieșiri pot duce la restricții temporare.", icon: "ban" },
-      { title: "Joburi externe", text: "Odată cu intrarea în departament, nu poți avea alt job, part-time sau full-time.", icon: "briefcase" },
-      { title: "Eligibilitate", text: "Este necesar să nu ai sancțiuni grave și să ai o atitudine matură, IC și OOC.", icon: "check" },
-      { title: "Prezență", text: "Activitatea regulată este obligatorie pentru a rămâne în departament.", icon: "badge" },
+      { title: "🕒 Ore necesare", text: "Minimum 50 de ore pentru a aplica în departament.", icon: "calendar" },
+      { title: "👤 Personal nou", text: "CK îți permite să aplici chiar și cu 0 ore.", icon: "person" },
+      { title: "🛡️ Estetică", text: "Tatuajele de pe față trebuie eliminate la intrare.", icon: "shield" },
+      { title: "🧩 Complexitate", text: "Structura este complexă și necesită timp de învățare.", icon: "network" },
+      { title: "📋 Regulament", text: "Regulamentul pentru susținerea testelor se găsește pe forum.", icon: "document" },
+      { title: "🚫 Blacklist", text: "Prea multe intrări și ieșiri pot duce la restricții temporare.", icon: "ban" },
+      { title: "💼 Joburi externe", text: "Odată cu intrarea în departament, nu poți avea alt job, part-time sau full-time.", icon: "briefcase" },
+      { title: "✅ Eligibilitate", text: "Este necesar să nu ai sancțiuni grave și să ai o atitudine matură, IC și OOC.", icon: "check" },
+      { title: "⏰ Prezență", text: "Activitatea regulată este obligatorie pentru a rămâne în departament.", icon: "badge" },
     ],
   },
   "/reintegrare": {
@@ -64,11 +64,11 @@ const pageRoutes = {
     section: "service-detail",
     description: "Condițiile și termenele de reintegrare în departament.",
     infoCards: [
-      { title: "Foste grade 200 și 300", text: "Reintră ca grad 400. Reintegrarea este posibilă în termen de până la 4 luni de la demisie.", icon: "person" },
-      { title: "Fost grad 100", text: "Reintră ca grad 300. Reintegrarea este posibilă în termen de până la 4 luni de la demisie.", icon: "person" },
-      { title: "Foste grade de conducere", text: "Vor fi reintegrate ca grad 200 și pot beneficia de reintegrare în maximum 2 luni.", icon: "badge" },
-      { title: "Reintegrare după 2 luni", text: "Reintegrarea se poate face o singură dată și după 2 luni, însă cu beneficiile gradului 300.", icon: "calendar" },
-      { title: "Certificate obligatorii", text: "Cei care revin prin reintegrare trebuie să obțină certificatele RADIO / BLS / ALS în primele două zile.", icon: "document" },
+      { title: "👥 Foste grade 200 și 300", text: "Reintră ca grad 400. Reintegrarea este posibilă în termen de până la 4 luni de la demisie.", icon: "person" },
+      { title: "👤 Fost grad 100", text: "Reintră ca grad 300. Reintegrarea este posibilă în termen de până la 4 luni de la demisie.", icon: "person" },
+      { title: "🎖️ Foste grade de conducere", text: "Vor fi reintegrate ca grad 200 și pot beneficia de reintegrare în maximum 2 luni.", icon: "badge" },
+      { title: "📅 Reintegrare după 2 luni", text: "Reintegrarea se poate face o singură dată și după 2 luni, însă cu beneficiile gradului 300.", icon: "calendar" },
+      { title: "📜 Certificate obligatorii", text: "Cei care revin prin reintegrare trebuie să obțină certificatele RADIO / BLS / ALS în primele două zile.", icon: "document" },
     ],
   },
   "/transfer": {
@@ -76,11 +76,11 @@ const pageRoutes = {
     section: "service-detail",
     description: "Gradele acordate în urma transferului, în funcție de gradul deținut.",
     infoCards: [
-      { title: "Agent Pază+ [AGP+]", text: "Va primi în urma transferului gradul de BRANCARDIER.", icon: "shield" },
-      { title: "Cadet [CD]", text: "Va primi în urma transferului gradul de BRANCARDIER.", icon: "person" },
-      { title: "Agent [AG]", text: "Va primi în urma transferului gradul de MEDIC STAGIAR.", icon: "briefcase" },
-      { title: "Agent Principal+ [AP+]", text: "Va primi în urma transferului gradul de MEDIC REZIDENT.", icon: "badge" },
-      { title: "Gradele CONDUCERII [PJ + PENITENCIAR]", text: "Vor primi în urma transferului gradul de MEDIC REZIDENT, cu AVANSARE MAI RAPIDĂ.", icon: "check" },
+      { title: "🛡️ Agent Pază+ [AGP+]", text: "Va primi în urma transferului gradul de BRANCARDIER.", icon: "shield" },
+      { title: "🎓 Cadet [CD]", text: "Va primi în urma transferului gradul de BRANCARDIER.", icon: "person" },
+      { title: "💼 Agent [AG]", text: "Va primi în urma transferului gradul de MEDIC STAGIAR.", icon: "briefcase" },
+      { title: "🎖️ Agent Principal+ [AP+]", text: "Va primi în urma transferului gradul de MEDIC REZIDENT.", icon: "badge" },
+      { title: "👑 Gradele CONDUCERII [PJ + PENITENCIAR]", text: "Vor primi în urma transferului gradul de MEDIC REZIDENT, cu AVANSARE MAI RAPIDĂ.", icon: "check" },
     ],
   },
 };
@@ -217,7 +217,7 @@ function renderServiceDetail(route) {
     const requestHeading = document.createElement("h2");
     requestHeading.textContent = "Ai nevoie de o audiență?";
     const requestDescription = document.createElement("p");
-    requestDescription.textContent = "Completează formularul și echipa noastră te va contacta pentru stabilirea întâlnirii.";
+    requestDescription.textContent = "Conducerea va analiza cererea de audiență și se va ocupa în cel mai scurt timp posibil.";
     requestCopy.append(requestKicker, requestHeading, requestDescription);
     actions.append(requestCopy, contact);
     serviceDetail.append(intro, list, actions);
@@ -1014,7 +1014,7 @@ newDepartmentForm.addEventListener("submit", async (event) => {
         body: JSON.stringify(Object.fromEntries(new FormData(newDepartmentForm))),
       });
       newDepartmentForm.reset();
-      newDepartmentForm.elements.color.value = "#087afa";
+      newDepartmentForm.elements.color.value = "#62b5f5";
       setMessage(newDepartmentMessage, "Departamentul a fost adăugat.");
       await loadDepartments();
     } catch (error) {
